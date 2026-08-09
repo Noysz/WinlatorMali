@@ -50,20 +50,28 @@ public class PulseAudioComponent extends EnvironmentComponent {
         String[] libs = new String[] {
             "libltdl.so", "libpulseaudio.so", "libpulse.so", "libpulsecommon-13.0.so", "libpulsecore-13.0.so", "libsndfile.so"
         };
+        Context context = environment.getContext();
         for (int i = 0; i < libs.length; i++) {
-            String path = "lib/" + "arm64-v8a" + "/" + libs[i];
-            ClassLoader loader = PulseAudioComponent.class.getClassLoader();
-            URL res = loader != null ? loader.getResource(path) : null;
-            Path dstDir = Paths.get(dst.getAbsolutePath() + "/" + libs[i]);
-            try {
-                InputStream is = res != null ? res.openStream() : null;
-                if (is != null) {
-                    Files.copy(is, dstDir, StandardCopyOption.REPLACE_EXISTING);
-                    FileUtils.chmod(dstDir.toFile(), 0771);
-                }    
-            }
-            catch (IOException e) {
-                throw new RuntimeException(e);
+            File dstFile = new File(dst, libs[i]);
+            boolean copied = false;
+            try (InputStream is = context.getAssets().open("pulseaudio_libs/" + libs[i])) {
+                Files.copy(is, dstFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                FileUtils.chmod(dstFile, 0771);
+                copied = true;
+            } catch (IOException ignored) {}
+
+            if (!copied) {
+                String path = "lib/arm64-v8a/" + libs[i];
+                ClassLoader loader = PulseAudioComponent.class.getClassLoader();
+                URL res = loader != null ? loader.getResource(path) : null;
+                if (res != null) {
+                    try (InputStream is2 = res.openStream()) {
+                        Files.copy(is2, dstFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        FileUtils.chmod(dstFile, 0771);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
         }
     }
