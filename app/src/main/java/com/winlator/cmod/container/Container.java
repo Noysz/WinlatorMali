@@ -86,6 +86,10 @@ public class Container {
     private String emulator;
     private boolean exclusiveXInput = true;
     private UnifiedInputState.EmulationMode emulationMode = UnifiedInputState.EmulationMode.GAME_CONTROLLER;
+    private String rendererPresentMode = "fifo";
+    private float colorBrightness = 0.0f;
+    private float colorContrast = 0.0f;
+    private float colorGamma = 1.0f;
 
     private ContainerManager containerManager;
 
@@ -418,6 +422,18 @@ public class Container {
         };
     }
 
+    public String getRendererPresentMode() { return rendererPresentMode; }
+    public void setRendererPresentMode(String v) { this.rendererPresentMode = v != null ? v : "fifo"; }
+
+    public float getColorBrightness() { return colorBrightness; }
+    public void setColorBrightness(float v) { this.colorBrightness = v; }
+
+    public float getColorContrast() { return colorContrast; }
+    public void setColorContrast(float v) { this.colorContrast = v; }
+
+    public float getColorGamma() { return colorGamma; }
+    public void setColorGamma(float v) { this.colorGamma = v; }
+
     public void saveData() {
         try {
             JSONObject data = new JSONObject();
@@ -451,8 +467,12 @@ public class Container {
             data.put("primaryController", primaryController);
             data.put("controllerMapping", controllerMapping);
             data.put("exclusiveXInput", exclusiveXInput);
-        data.put("emulationMode", emulationMode.name());
-        if (!WineInfo.isMainWineVersion(wineVersion)) data.put("wineVersion", wineVersion);
+            data.put("emulationMode", emulationMode.name());
+            data.put("rendererPresentMode", rendererPresentMode);
+            data.put("colorBrightness", (double) colorBrightness);
+            data.put("colorContrast", (double) colorContrast);
+            data.put("colorGamma", (double) colorGamma);
+            if (!WineInfo.isMainWineVersion(wineVersion)) data.put("wineVersion", wineVersion);
             FileUtils.writeString(getConfigFile(), data.toString());
         }
         catch (JSONException e) {}
@@ -567,6 +587,18 @@ public class Container {
                 } catch (IllegalArgumentException e) {
                     setEmulationMode(UnifiedInputState.EmulationMode.GAME_CONTROLLER);
                 }
+                break;
+            case "rendererPresentMode" :
+                setRendererPresentMode(data.getString(key));
+                break;
+            case "colorBrightness" :
+                setColorBrightness((float) data.getDouble(key));
+                break;
+            case "colorContrast" :
+                setColorContrast((float) data.getDouble(key));
+                break;
+            case "colorGamma" :
+                setColorGamma((float) data.getDouble(key));
                 break;
             }
         }

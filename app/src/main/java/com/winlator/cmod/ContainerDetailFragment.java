@@ -279,7 +279,22 @@ public class ContainerDetailFragment extends Fragment {
                 isEditMode() ? container.getDXWrapper() : Container.DEFAULT_DXWRAPPER, null);
 
         Spinner sRenderer = view.findViewById(R.id.SRenderer);
-        AppUtils.setSpinnerSelectionFromIdentifier(sRenderer, isEditMode() ? container.getRenderer() : Container.DEFAULT_RENDERER);
+        View btRendererConfig = view.findViewById(R.id.BTRendererConfig);
+        btRendererConfig.setOnClickListener(v -> new com.winlator.cmod.contentdialog.VulkanRendererConfigDialog(context, isEditMode() ? container : new Container(0)).show());
+
+        String currentRenderer = isEditMode() ? container.getRenderer() : Container.DEFAULT_RENDERER;
+        AppUtils.setSpinnerSelectionFromIdentifier(sRenderer, currentRenderer);
+        btRendererConfig.setVisibility("vulkan".equalsIgnoreCase(currentRenderer) ? View.VISIBLE : View.GONE);
+
+        sRenderer.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View v, int position, long id) {
+                String sel = position == 1 ? "vulkan" : "opengl_es";
+                btRendererConfig.setVisibility("vulkan".equalsIgnoreCase(sel) ? View.VISIBLE : View.GONE);
+            }
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
 
         view.findViewById(R.id.BTHelpDXWrapper).setOnClickListener((v) -> AppUtils.showHelpBox(context, v, R.string.dxwrapper_help_content));
 

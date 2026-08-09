@@ -1371,6 +1371,16 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         }
 
         xServer.setRenderer(renderer);
+        if (renderer instanceof com.winlator.cmod.renderer.vulkan.VulkanRenderer) {
+            com.winlator.cmod.renderer.vulkan.VulkanRenderer vkRenderer = (com.winlator.cmod.renderer.vulkan.VulkanRenderer) renderer;
+            String pm = container != null ? container.getRendererPresentMode() : "fifo";
+            int pmInt = "immediate".equalsIgnoreCase(pm) ? 0 : "mailbox".equalsIgnoreCase(pm) ? 1 : 2;
+            vkRenderer.setVkPresentMode(pmInt);
+            float b = container != null ? container.getColorBrightness() : 0.0f;
+            float c = container != null ? container.getColorContrast() : 0.0f;
+            float g = container != null ? container.getColorGamma() : 1.0f;
+            vkRenderer.setScreenEffects(b, c, g, false, false, false, false);
+        }
         rootView.addView(xServerView);
 
         globalCursorSpeed = preferences.getFloat("cursor_speed", 1.0f);

@@ -28,6 +28,16 @@
         <item>OpenGL ES</item>
         <item>Vulkan</item>
     </string-array>
+    <string-array name="vulkan_present_mode_entries">
+        <item>FIFO (VSync On)</item>
+        <item>Mailbox (Triple Buffer)</item>
+        <item>Immediate (No VSync / Uncapped)</item>
+    </string-array>
+    <string-array name="vulkan_present_mode_values">
+        <item>fifo</item>
+        <item>mailbox</item>
+        <item>immediate</item>
+    </string-array>
     <string-array name="wrapper_graphics_driver_version_entries">
         <item>System</item>
         <item>v819</item>

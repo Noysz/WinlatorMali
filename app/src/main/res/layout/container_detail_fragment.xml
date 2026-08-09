@@ -153,10 +153,23 @@
                     android:visibility="gone" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/renderer" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/renderer" />
+
+                <ImageButton
+                    style="@style/ListMenuButton"
+                    android:id="@+id/BTRendererConfig"
+                    android:src="@drawable/icon_settings"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <Spinner
                 style="@style/ComboBox"
