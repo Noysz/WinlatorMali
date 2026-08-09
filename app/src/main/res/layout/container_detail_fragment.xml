@@ -153,16 +153,23 @@
                     android:visibility="gone" />
             </LinearLayout>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/renderer" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-                <TextView
+                <Spinner
+                    style="@style/ComboBox"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/renderer" />
+                    android:id="@+id/SRenderer"
+                    android:entries="@array/renderer_entries" />
 
                 <ImageButton
                     style="@style/ListMenuButton"
@@ -170,13 +177,6 @@
                     android:src="@drawable/icon_settings"
                     android:visibility="gone" />
             </LinearLayout>
-
-            <Spinner
-                style="@style/ComboBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/SRenderer"
-                android:entries="@array/renderer_entries" />
 
             <LinearLayout
                 android:layout_width="match_parent"

@@ -44,9 +44,11 @@ public class Container {
     public static final int FULLSCREEN_OFF = 0;
     public static final int FULLSCREEN_FIT = 1;
     public static final int FULLSCREEN_STRETCH = 2;
+    public static final int FULLSCREEN_FILL = 3;
+    public static final int FULLSCREEN_INTEGER = 4;
 
     public static int nextFullscreenMode(int currentMode) {
-        return (currentMode + 1) % 3;
+        return (currentMode + 1) % 5;
     }
 
     public static final byte STARTUP_SELECTION_NORMAL = 0;
@@ -88,6 +90,10 @@ public class Container {
     private UnifiedInputState.EmulationMode emulationMode = UnifiedInputState.EmulationMode.GAME_CONTROLLER;
     private String rendererPresentMode = "fifo";
     private boolean rendererSwapRB = false;
+    private int rendererFilterMode = 0;
+    private int rendererUpscalerMode = 0;
+    private boolean rendererHqDownscale = false;
+    private int rendererUpscaleSharpness = 75;
 
     private ContainerManager containerManager;
 
@@ -426,6 +432,18 @@ public class Container {
     public boolean getRendererSwapRB() { return rendererSwapRB; }
     public void setRendererSwapRB(boolean v) { this.rendererSwapRB = v; }
 
+    public int getRendererFilterMode() { return rendererFilterMode; }
+    public void setRendererFilterMode(int v) { this.rendererFilterMode = v; }
+
+    public int getRendererUpscalerMode() { return rendererUpscalerMode; }
+    public void setRendererUpscalerMode(int v) { this.rendererUpscalerMode = v; }
+
+    public boolean getRendererHqDownscale() { return rendererHqDownscale; }
+    public void setRendererHqDownscale(boolean v) { this.rendererHqDownscale = v; }
+
+    public int getRendererUpscaleSharpness() { return rendererUpscaleSharpness; }
+    public void setRendererUpscaleSharpness(int v) { this.rendererUpscaleSharpness = v; }
+
     public void saveData() {
         try {
             JSONObject data = new JSONObject();
@@ -462,6 +480,10 @@ public class Container {
             data.put("emulationMode", emulationMode.name());
             data.put("rendererPresentMode", rendererPresentMode);
             if (rendererSwapRB) data.put("rendererSwapRB", true);
+            if (rendererFilterMode != 0) data.put("rendererFilterMode", rendererFilterMode);
+            if (rendererUpscalerMode != 0) data.put("rendererUpscalerMode", rendererUpscalerMode);
+            if (rendererHqDownscale) data.put("rendererHqDownscale", true);
+            if (rendererUpscaleSharpness != 75) data.put("rendererUpscaleSharpness", rendererUpscaleSharpness);
             if (!WineInfo.isMainWineVersion(wineVersion)) data.put("wineVersion", wineVersion);
             FileUtils.writeString(getConfigFile(), data.toString());
         }
@@ -583,6 +605,18 @@ public class Container {
                 break;
             case "rendererSwapRB" :
                 setRendererSwapRB(data.getBoolean(key));
+                break;
+            case "rendererFilterMode" :
+                setRendererFilterMode(data.getInt(key));
+                break;
+            case "rendererUpscalerMode" :
+                setRendererUpscalerMode(data.getInt(key));
+                break;
+            case "rendererHqDownscale" :
+                setRendererHqDownscale(data.getBoolean(key));
+                break;
+            case "rendererUpscaleSharpness" :
+                setRendererUpscaleSharpness(data.getInt(key));
                 break;
             }
         }

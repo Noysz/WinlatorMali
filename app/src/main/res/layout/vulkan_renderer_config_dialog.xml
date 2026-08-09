@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
@@ -39,6 +40,69 @@
             android:id="@+id/SPresentMode"
             android:entries="@array/vulkan_present_mode_entries"
             android:spinnerMode="dialog" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Scaling Filter"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp" />
+
+        <Spinner
+            style="@style/ComboBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/SFilterMode"
+            android:entries="@array/vulkan_filter_mode_entries"
+            android:spinnerMode="dialog" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Spatial Upscaler"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp" />
+
+        <Spinner
+            style="@style/ComboBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/SUpscalerMode"
+            android:entries="@array/vulkan_upscaler_entries"
+            android:spinnerMode="dialog" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="HQ Supersampling Downscale"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp" />
+
+        <Spinner
+            style="@style/ComboBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/SHqDownscale"
+            android:entries="@array/vulkan_hq_downscale_entries"
+            android:spinnerMode="dialog" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upscaler Sharpness"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp" />
+
+        <com.winlator.cmod.widget.SeekBar
+            android:id="@+id/SBUpscaleSharpness"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            app:maxValue="100"
+            app:minValue="0" />
 
     </LinearLayout>
 </ScrollView>

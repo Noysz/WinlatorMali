@@ -3,4 +3,11 @@
     <string name="search_game_info">Search Game Info</string>
     <string name="no_internet_connection">No internet connection. Please check your network settings.</string>
     <string name="community_search_instruction">Enter the <b>official full name</b> of the game for accurate community indexing.</string>
+    <string name="fullscreen_off">Off (Letterbox)</string>
+    <string name="fullscreen_fit">Fit (Immersive Letterbox)</string>
+    <string name="fullscreen_stretch">Stretch (Distort Aspect)</string>
+    <string name="fullscreen_fill">Fill (Crop-to-Fill)</string>
+    <string name="fullscreen_integer">Integer (Pixel-Perfect)</string>
+    <string name="saturation">Saturation</string>
+    <string name="fullscreen_scaling_help">Scaling helps fit the game screen to your device display.</string>
 </resources>

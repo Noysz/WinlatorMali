@@ -18,6 +18,8 @@ import com.winlator.cmod.XServerDisplayActivity;
 import com.winlator.cmod.core.AppUtils;
 import com.winlator.cmod.core.KeyValueSet;
 import com.winlator.cmod.renderer.GLRenderer;
+import com.winlator.cmod.renderer.HostRenderer;
+import com.winlator.cmod.renderer.vulkan.VulkanRenderer;
 import com.winlator.cmod.renderer.effects.ColorEffect;
 import com.winlator.cmod.renderer.effects.CRTEffect;
 import com.winlator.cmod.renderer.effects.FXAAEffect;
@@ -41,6 +43,7 @@ public class ScreenEffectDialog extends ContentDialog {
     private final SeekBar sbBrightness;
     private final SeekBar sbContrast;
     private final SeekBar sbGamma;
+    private final SeekBar sbSaturation;
 
     private static final String TAG = "ScreenEffectDialog";
 
@@ -48,8 +51,6 @@ public class ScreenEffectDialog extends ContentDialog {
     public ScreenEffectDialog(XServerDisplayActivity activity) {
         super(activity, R.layout.screen_effect_dialog);
         this.activity = activity;
-
-        getContentView().getLayoutParams().width = AppUtils.getPreferredDialogWidth(activity, 0.9f, 0.8f);
 
         preferences = PreferenceManager.getDefaultSharedPreferences(activity);
 
@@ -62,6 +63,7 @@ public class ScreenEffectDialog extends ContentDialog {
         sbBrightness = findViewById(R.id.SBBrightness);
         sbContrast = findViewById(R.id.SBContrast);
         sbGamma = findViewById(R.id.SBGamma);
+        sbSaturation = findViewById(R.id.SBSaturation);
         cbEnableFXAA = findViewById(R.id.CBEnableFXAA);
         cbEnableCRTShader = findViewById(R.id.CBEnableCRTShader);
 
@@ -69,35 +71,45 @@ public class ScreenEffectDialog extends ContentDialog {
         cbEnableNTSCEffect = findViewById(R.id.CBEnableNTSCEffect);
 
 
-        com.winlator.cmod.renderer.HostRenderer hostRenderer = activity.getXServerView().getRenderer();
-        if (hostRenderer == null || !(hostRenderer instanceof GLRenderer)) {
-            Log.e(TAG, "Renderer is null or not GLRenderer in ScreenEffectDialog initialization!");
+        HostRenderer hostRenderer = activity.getXServerView().getRenderer();
+        if (hostRenderer == null) {
+            Log.e(TAG, "Renderer is null in ScreenEffectDialog initialization!");
             return;
         }
-        GLRenderer renderer = (GLRenderer) hostRenderer;
 
-        ColorEffect colorEffect = (ColorEffect) renderer.getEffectComposer().getEffect(ColorEffect.class);
-        FXAAEffect fxaaEffect = (FXAAEffect) renderer.getEffectComposer().getEffect(FXAAEffect.class);
-        CRTEffect crtEffect = (CRTEffect) renderer.getEffectComposer().getEffect(CRTEffect.class);
-        ToonEffect toonEffect = (ToonEffect) renderer.getEffectComposer().getEffect(ToonEffect.class);
-        NTSCCombinedEffect ntscEffect = (NTSCCombinedEffect) renderer.getEffectComposer().getEffect(NTSCCombinedEffect.class);
+        if (hostRenderer instanceof GLRenderer) {
+            GLRenderer renderer = (GLRenderer) hostRenderer;
+            ColorEffect colorEffect = (ColorEffect) renderer.getEffectComposer().getEffect(ColorEffect.class);
+            FXAAEffect fxaaEffect = (FXAAEffect) renderer.getEffectComposer().getEffect(FXAAEffect.class);
+            CRTEffect crtEffect = (CRTEffect) renderer.getEffectComposer().getEffect(CRTEffect.class);
+            ToonEffect toonEffect = (ToonEffect) renderer.getEffectComposer().getEffect(ToonEffect.class);
+            NTSCCombinedEffect ntscEffect = (NTSCCombinedEffect) renderer.getEffectComposer().getEffect(NTSCCombinedEffect.class);
 
-        Log.d(TAG, "ScreenEffectDialog initialized");
+            if (colorEffect != null) {
+                sbBrightness.setValue(colorEffect.getBrightness() * 100);
+                sbContrast.setValue(colorEffect.getContrast() * 100);
+                sbGamma.setValue(colorEffect.getGamma());
+                sbSaturation.setValue((colorEffect.getSaturation() - 1.0f) * 100);
+            } else resetSettings();
 
-        if (colorEffect != null) {
-            Log.d(TAG, "ColorEffect found");
-            sbBrightness.setValue(colorEffect.getBrightness() * 100);
-            sbContrast.setValue(colorEffect.getContrast() * 100);
-            sbGamma.setValue(colorEffect.getGamma());
-        } else {
-            Log.d(TAG, "ColorEffect not found, resetting settings");
-            resetSettings();
+            cbEnableFXAA.setChecked(fxaaEffect != null);
+            cbEnableCRTShader.setChecked(crtEffect != null);
+            cbEnableToonShader.setChecked(toonEffect != null);
+            cbEnableNTSCEffect.setChecked(ntscEffect != null);
+        }
+        else if (hostRenderer instanceof VulkanRenderer) {
+            VulkanRenderer vkr = (VulkanRenderer) hostRenderer;
+            sbBrightness.setValue(vkr.getColorBrightness() * 100);
+            sbContrast.setValue(vkr.getColorContrast() * 100);
+            sbGamma.setValue(vkr.getColorGamma());
+            sbSaturation.setValue((vkr.getColorSaturation() - 1.0f) * 100);
+            cbEnableFXAA.setChecked(vkr.isFxaaEnabled());
+            cbEnableCRTShader.setChecked(vkr.isCrtEnabled());
+            cbEnableToonShader.setChecked(vkr.isToonEnabled());
+            cbEnableNTSCEffect.setChecked(vkr.isNtscEnabled());
         }
 
-        cbEnableFXAA.setChecked(fxaaEffect != null);
-        cbEnableCRTShader.setChecked(crtEffect != null);
-        cbEnableToonShader.setChecked(toonEffect != null);
-        cbEnableNTSCEffect.setChecked(ntscEffect != null);
+        Log.d(TAG, "ScreenEffectDialog initialized");
 
         loadProfileSpinner(sProfile, activity.getScreenEffectProfile());
 
@@ -124,7 +136,7 @@ public class ScreenEffectDialog extends ContentDialog {
 
             // Directly calling applyEffects to ensure it's triggered
             Log.d(TAG, "Calling applyEffects() directly.");
-            applyEffects(colorEffect, renderer, fxaaEffect, crtEffect, toonEffect, ntscEffect);
+            applyEffects();
 
             Log.d(TAG, "Effects applied. Dismissing dialog.");
             dismiss(); // Close the dialog
@@ -138,7 +150,7 @@ public class ScreenEffectDialog extends ContentDialog {
 
         setOnConfirmCallback(() -> {
             Log.d(TAG, "OnConfirm callback triggered. Applying effects.");
-            applyEffects(colorEffect, renderer, fxaaEffect, crtEffect, toonEffect, ntscEffect);
+            applyEffects();
             Log.d(TAG, "Effects applied from callback.");
 
             // Optionally dismiss after applying effects in callback
@@ -212,8 +224,9 @@ public class ScreenEffectDialog extends ContentDialog {
             if (parts[0].equals(name) && parts.length > 1 && !parts[1].isEmpty()) {
                 KeyValueSet settings = new KeyValueSet(parts[1]);
                 sbBrightness.setValue(settings.getFloat("brightness", 0));
-                sbContrast.setValue(settings.getFloat("contrast", 1.0f));
+                sbContrast.setValue(settings.getFloat("contrast", 0));
                 sbGamma.setValue(settings.getFloat("gamma", 1.0f));
+                sbSaturation.setValue(settings.getFloat("saturation", 0));
                 cbEnableFXAA.setChecked(settings.getBoolean("fxaa", false));
                 cbEnableCRTShader.setChecked(settings.getBoolean("crt_shader", false));
                 cbEnableToonShader.setChecked(settings.getBoolean("toon_shader", false));
@@ -235,6 +248,7 @@ public class ScreenEffectDialog extends ContentDialog {
         sbBrightness.setValue(0);
         sbContrast.setValue(0);
         sbGamma.setValue(1.0f);
+        sbSaturation.setValue(0);
         cbEnableFXAA.setChecked(false);
         cbEnableCRTShader.setChecked(false);
         cbEnableToonShader.setChecked(false);
@@ -250,6 +264,7 @@ public class ScreenEffectDialog extends ContentDialog {
             settings.put("brightness", sbBrightness.getValue());
             settings.put("contrast", sbContrast.getValue());
             settings.put("gamma", sbGamma.getValue());
+            settings.put("saturation", sbSaturation.getValue());
             settings.put("fxaa", cbEnableFXAA.isChecked());
             settings.put("crt_shader", cbEnableCRTShader.isChecked());
             settings.put("toon_shader", cbEnableToonShader.isChecked());
@@ -268,122 +283,54 @@ public class ScreenEffectDialog extends ContentDialog {
         }
     }
 
-    public void applyEffects(ColorEffect colorEffect, GLRenderer renderer, FXAAEffect fxaaEffect, CRTEffect crtEffect, ToonEffect toonEffect, NTSCCombinedEffect ntscEffect) {
+    public void applyEffects() {
         Log.d(TAG, "applyEffects() called");
 
         float brightness = sbBrightness.getValue();
         float contrast = sbContrast.getValue();
         float gamma = sbGamma.getValue();
-        boolean enableFXAA = cbEnableFXAA.isChecked();
-        boolean enableCRTShader = cbEnableCRTShader.isChecked();
-        boolean enableToonShader = cbEnableToonShader.isChecked();
-        boolean enableNTSCEffect = cbEnableNTSCEffect.isChecked();
+        float saturation = (sbSaturation.getValue() / 100.0f) + 1.0f;
+        boolean fxaa = cbEnableFXAA.isChecked();
+        boolean crt = cbEnableCRTShader.isChecked();
+        boolean toon = cbEnableToonShader.isChecked();
+        boolean ntsc = cbEnableNTSCEffect.isChecked();
 
-        Log.d(TAG, "Settings - Brightness: " + brightness + ", Contrast: " + contrast + ", Gamma: " + gamma);
-        Log.d(TAG, "FXAA Enabled: " + enableFXAA + ", CRT Shader Enabled: " + enableCRTShader);
+        HostRenderer hostRenderer = activity.getXServerView().getRenderer();
+        if (hostRenderer instanceof GLRenderer) {
+            GLRenderer renderer = (GLRenderer) hostRenderer;
+            ColorEffect ce = (ColorEffect) renderer.getEffectComposer().getEffect(ColorEffect.class);
+            FXAAEffect  fx = (FXAAEffect)  renderer.getEffectComposer().getEffect(FXAAEffect.class);
+            CRTEffect   cr = (CRTEffect)   renderer.getEffectComposer().getEffect(CRTEffect.class);
+            ToonEffect  to = (ToonEffect)  renderer.getEffectComposer().getEffect(ToonEffect.class);
+            NTSCCombinedEffect nt = (NTSCCombinedEffect) renderer.getEffectComposer().getEffect(NTSCCombinedEffect.class);
 
-        // Check ColorEffect state
-        if (colorEffect == null) {
-            Log.d(TAG, "ColorEffect is null, creating new instance.");
-            colorEffect = new ColorEffect();
-        }
-
-        // Check if renderer and effect composer are non-null
-        if (renderer == null) {
-            Log.e(TAG, "Renderer is null!");
-            return;
-        }
-
-        if (renderer.getEffectComposer() == null) {
-            Log.e(TAG, "EffectComposer is null!");
-            return;
-        }
-
-        // Apply or remove ColorEffect
-        if (brightness == 0 && contrast == 0 && gamma == 1.0f) {
-            Log.d(TAG, "No adjustments are applied. Removing ColorEffect if it exists.");
-            renderer.getEffectComposer().removeEffect(colorEffect);
-        } else {
-            Log.d(TAG, "Applying ColorEffect adjustments.");
-            colorEffect.setBrightness(brightness / 100f);
-            colorEffect.setContrast(contrast / 100f);
-            colorEffect.setGamma(gamma);
-            renderer.getEffectComposer().addEffect(colorEffect);
-            Log.d(TAG, "ColorEffect added/updated.");
-        }
-
-        // Apply or remove FXAAEffect
-        if (enableFXAA) {
-            if (fxaaEffect == null) {
-                Log.d(TAG, "FXAAEffect is null, creating and adding new instance.");
-                fxaaEffect = new FXAAEffect();
-                renderer.getEffectComposer().addEffect(fxaaEffect);
-            } else {
-                Log.d(TAG, "FXAAEffect is already added.");
+            if (ce == null) ce = new ColorEffect();
+            if (brightness == 0 && contrast == 0 && gamma == 1.0f && saturation == 1.0f) renderer.getEffectComposer().removeEffect(ce);
+            else {
+                ce.setBrightness(brightness / 100f);
+                ce.setContrast(contrast / 100f);
+                ce.setGamma(gamma);
+                ce.setSaturation(saturation);
+                renderer.getEffectComposer().addEffect(ce);
             }
-        } else if (fxaaEffect != null) {
-            Log.d(TAG, "FXAA is disabled. Removing FXAAEffect.");
-            renderer.getEffectComposer().removeEffect(fxaaEffect);
+
+            if (fxaa) { if (fx == null) renderer.getEffectComposer().addEffect(new FXAAEffect()); }
+            else if (fx != null) renderer.getEffectComposer().removeEffect(fx);
+
+            if (crt) { if (cr == null) renderer.getEffectComposer().addEffect(new CRTEffect()); }
+            else if (cr != null) renderer.getEffectComposer().removeEffect(cr);
+
+            if (toon) { if (to == null) renderer.getEffectComposer().addEffect(new ToonEffect()); }
+            else if (to != null) renderer.getEffectComposer().removeEffect(to);
+
+            if (ntsc) { if (nt == null) renderer.getEffectComposer().addEffect(new NTSCCombinedEffect()); }
+            else if (nt != null) renderer.getEffectComposer().removeEffect(nt);
         }
-
-        // Apply or remove CRTEffect
-        if (enableCRTShader) {
-            if (crtEffect == null) {
-                Log.d(TAG, "CRTEffect is null, creating and adding new instance.");
-                crtEffect = new CRTEffect();
-                renderer.getEffectComposer().addEffect(crtEffect);
-            } else {
-                Log.d(TAG, "CRTEffect is already added.");
-            }
-        } else if (crtEffect != null) {
-            Log.d(TAG, "CRT Shader is disabled. Removing CRTEffect.");
-            renderer.getEffectComposer().removeEffect(crtEffect);
+        else if (hostRenderer instanceof VulkanRenderer) {
+            ((VulkanRenderer)hostRenderer).setScreenEffects(brightness, contrast, gamma, saturation, fxaa, toon, crt, ntsc);
         }
-
-
-        // Apply or remove ToonEffect
-        if (enableToonShader) {
-            if (toonEffect == null) {
-                Log.d(TAG, "ToonEffect is null, creating and adding new instance.");
-                toonEffect = new ToonEffect();
-                renderer.getEffectComposer().addEffect(toonEffect);
-            } else {
-                Log.d(TAG, "ToonEffect is already added.");
-            }
-        } else if (toonEffect != null) {
-            Log.d(TAG, "Toon Shader is disabled. Removing ToonEffect.");
-            renderer.getEffectComposer().removeEffect(toonEffect);
-        }
-
-
-        // Apply or remove NTSCCombinedEffect
-        if (enableNTSCEffect) {
-            if (ntscEffect == null) {
-                Log.d(TAG, "NTSCCombinedEffect is null, creating and adding new instance.");
-                ntscEffect = new NTSCCombinedEffect();
-                renderer.getEffectComposer().addEffect(ntscEffect);
-            } else {
-                Log.d(TAG, "NTSCCombinedEffect is already added.");
-            }
-        } else if (ntscEffect != null) {
-            Log.d(TAG, "NTSC Effect is disabled. Removing NTSCCombinedEffect.");
-            renderer.getEffectComposer().removeEffect(ntscEffect);
-        }
-
-//        // Toggle ToonEffect
-//        if (renderer != null && renderer.getEffectComposer() != null) {
-//            if (enableToonShader) {
-//                renderer.getEffectComposer().toggleToonEffect();
-//            } else {
-//                ToonEffect toonEffect = renderer.getEffectComposer().getEffect(ToonEffect.class);
-//                if (toonEffect != null) {
-//                    renderer.getEffectComposer().removeEffect(toonEffect);
-//                }
-//            }
-//        }
 
         saveProfile(sProfile);
-        Log.d(TAG, "Profile saved after applying effects.");
     }
 
     public void setOnConfirmCallback(Runnable confirmCallback) {

@@ -23,6 +23,7 @@ layout(push_constant) uniform PC {
     float brightness; // additive, [-1, 1]
     float contrast;   // [0, 2]; effective multiplier = clamp(contrast+1, 0.5, 2)
     float gamma;      // [0.1, 5]
+    float saturation; // [0, 2]; 1.0 = neutral
 } pc;
 
 layout(location = 0) in  vec2 fragTexCoord;
@@ -34,5 +35,7 @@ void main() {
     color = clamp(color + pc.brightness, 0.0, 1.0);
     color = (color - 0.5) * clamp(pc.contrast + 1.0, 0.5, 2.0) + 0.5;
     color = pow(color, vec3(1.0 / pc.gamma));
+    float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
+    color = mix(vec3(luma), color, pc.saturation);
     outColor = vec4(color, texelColor.a);
 }

@@ -310,9 +310,9 @@ Java_com_winlator_cmod_renderer_vulkan_VulkanRenderer_nativeSetNtsc(JNIEnv*, job
 }
 // Color grade: brightness/contrast as the raw -100..100 sliders, gamma 0.5..3.0.
 extern "C" JNIEXPORT void JNICALL
-Java_com_winlator_cmod_renderer_vulkan_VulkanRenderer_nativeSetColorGrade(JNIEnv*, jobject, jlong handle, jfloat brightness, jfloat contrast, jfloat gamma) {
+Java_com_winlator_cmod_renderer_vulkan_VulkanRenderer_nativeSetColorGrade(JNIEnv*, jobject, jlong handle, jfloat brightness, jfloat contrast, jfloat gamma, jfloat saturation) {
     auto* r = reinterpret_cast<VulkanRendererContext*>(handle);
-    if (r) r->setColorGrade((float)brightness, (float)contrast, (float)gamma);
+    if (r) r->setColorGrade((float)brightness, (float)contrast, (float)gamma, (float)saturation);
 }
 
 extern "C" JNIEXPORT void JNICALL

@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    android:layout_width="340dp"
     android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="520dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbarStyle="outsideOverlay">
 
         <LinearLayout
-            android:layout_width="230dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="12dp">
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -57,28 +61,30 @@
                         app:maxValue="3.0"
                         app:minValue="0.5"
                         app:step="0.01" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/saturation" />
+
+                    <com.winlator.cmod.widget.SeekBar
+                        android:id="@+id/SBSaturation"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        app:maxValue="100"
+                        app:minValue="-100" />
                 </LinearLayout>
 
                 <TextView
                     android:id="@+id/LBLColorAdjustment"
                     style="@style/FieldSetLabel"
-                    android:background="#ffffffff"
                     android:text="@string/color_adjustment" />
             </FrameLayout>
-        </LinearLayout>
-
-        <View style="@style/VerticalLine" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="@string/profile" />
 
             <LinearLayout
@@ -88,7 +94,7 @@
                 android:orientation="horizontal">
 
                 <Spinner
-                    android:id="@id/SProfile"
+                    android:id="@+id/SProfile"
                     style="@style/ComboBox"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -97,12 +103,12 @@
                 <LinearLayout style="@style/Toolbox">
 
                     <ImageButton
-                        android:id="@id/BTAddProfile"
+                        android:id="@+id/BTAddProfile"
                         style="@style/ListMenuButton"
                         android:src="@drawable/icon_add" />
 
                     <ImageButton
-                        android:id="@id/BTRemoveProfile"
+                        android:id="@+id/BTRemoveProfile"
                         style="@style/ListMenuButton"
                         android:layout_marginRight="0dp"
                         android:src="@drawable/icon_remove" />
@@ -133,6 +139,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/enable_ntsc_effect" />
+
+            <Button
+                android:id="@+id/BTReset"
+                style="@style/ButtonNeutral"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/reset" />
+
         </LinearLayout>
-    </LinearLayout>
+    </ScrollView>
 </LinearLayout>

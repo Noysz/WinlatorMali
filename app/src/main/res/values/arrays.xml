@@ -32,6 +32,25 @@
         <item>BGRA</item>
         <item>RGBA</item>
     </string-array>
+    <string-array name="vulkan_filter_mode_entries">
+        <item>Linear</item>
+        <item>Nearest</item>
+        <item>Cubic (if supported)</item>
+    </string-array>
+    <string-array name="vulkan_upscaler_entries">
+        <item>None</item>
+        <item>Linear (Native Res)</item>
+        <item>Nearest (Native Res)</item>
+        <item>Snapdragon GSR (SGSR)</item>
+        <item>AMD FSR 1.0 (Stretch)</item>
+        <item>AMD FSR 1.0 (Aspect-Fit)</item>
+        <item>FSR RCAS (Sharpen)</item>
+        <item>NVIDIA Image Scaling (NIS)</item>
+    </string-array>
+    <string-array name="vulkan_hq_downscale_entries">
+        <item>Off (Bilinear)</item>
+        <item>On (Lanczos)</item>
+    </string-array>
     <string-array name="vulkan_present_mode_entries">
         <item>FIFO (VSync On)</item>
         <item>Mailbox (Triple Buffer)</item>

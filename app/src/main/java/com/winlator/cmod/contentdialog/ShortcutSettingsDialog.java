@@ -32,6 +32,7 @@ import com.winlator.cmod.container.ContainerManager;
 import com.winlator.cmod.container.Shortcut;
 import com.winlator.cmod.contents.ContentProfile;
 import com.winlator.cmod.contents.ContentsManager;
+import com.winlator.cmod.contentdialog.BCNConfigDialog;
 import com.winlator.cmod.core.AppUtils;
 import com.winlator.cmod.core.DefaultVersion;
 import com.winlator.cmod.core.EnvVars;
@@ -132,6 +133,11 @@ public class ShortcutSettingsDialog extends ContentDialog {
         findViewById(R.id.BTHelpDXWrapper).setOnClickListener((v) -> AppUtils.showHelpBox(context, v, R.string.dxwrapper_help_content));
 
         findViewById(R.id.BTHelpGtaOptimization).setOnClickListener((v) -> AppUtils.showHelpBox(context, v, "Applies graphics and CPU optimizations for GTA V to improve performance on low-end hardware."));
+
+        findViewById(R.id.BTBCNConfig).setOnClickListener(v -> {
+            BCNConfigDialog dialog = new BCNConfigDialog(vGraphicsDriverConfig);
+            dialog.show();
+        });
 
         final Spinner sAudioDriver = findViewById(R.id.SAudioDriver);
         AppUtils.setSpinnerSelectionFromIdentifier(sAudioDriver, shortcut.getExtra("audioDriver", shortcut.container.getAudioDriver()));

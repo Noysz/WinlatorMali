@@ -39,6 +39,9 @@ public class SeekBar extends AppCompatImageView {
     private String suffix;
     private DecimalFormat decimalFormat;
     private OnValueChangeListener onValueChangeListener;
+    private float lastX;
+    private float lastY;
+    private boolean isDragging;
 
     public SeekBar(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -198,20 +201,37 @@ public class SeekBar extends AppCompatImageView {
 
         switch (event.getAction()) {
             case android.view.MotionEvent.ACTION_DOWN:
-                setPressed(true);
-                setNormalizedValue(event.getX());
+                lastX = event.getX();
+                lastY = event.getY();
+                isDragging = false;
                 break;
             case android.view.MotionEvent.ACTION_MOVE:
-                setNormalizedValue(event.getX());
+                if (!isDragging) {
+                    float dx = Math.abs(event.getX() - lastX);
+                    float dy = Math.abs(event.getY() - lastY);
+                    int slop = android.view.ViewConfiguration.get(getContext()).getScaledTouchSlop();
+                    if (dx > slop && dx > dy) {
+                        isDragging = true;
+                        if (getParent() != null) getParent().requestDisallowInterceptTouchEvent(true);
+                        setPressed(true);
+                    }
+                }
+                if (isDragging) setNormalizedValue(event.getX());
                 break;
             case android.view.MotionEvent.ACTION_UP:
-                setPressed(false);
-                if (onValueChangeListener != null) {
-                    onValueChangeListener.onValueChangeListener(this, getValue());
+                if (!isDragging) {
+                    setNormalizedValue(event.getX());
+                    if (onValueChangeListener != null) onValueChangeListener.onValueChangeListener(this, getValue());
                 }
+                else {
+                    setPressed(false);
+                    if (onValueChangeListener != null) onValueChangeListener.onValueChangeListener(this, getValue());
+                }
+                isDragging = false;
                 break;
             case android.view.MotionEvent.ACTION_CANCEL:
                 setPressed(false);
+                isDragging = false;
                 break;
         }
         invalidate();

@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.winlator.cmod.R;
 import com.winlator.cmod.XrActivity;
+import com.winlator.cmod.container.Container;
 import com.winlator.cmod.math.Mathf;
 import com.winlator.cmod.math.XForm;
 import com.winlator.cmod.renderer.material.CursorMaterial;
@@ -48,7 +49,7 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
     public final ViewTransformation viewTransformation = new ViewTransformation();
     private final Drawable rootCursorDrawable;
     private final ArrayList<RenderableWindow> renderableWindows = new ArrayList<>();
-    private boolean fullscreen = false;
+    private int fullscreenMode = Container.FULLSCREEN_OFF;
     private boolean toggleFullscreen = false;
     public boolean viewportNeedsUpdate = true;
     private boolean cursorVisible = true;
@@ -85,6 +86,8 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
         xServer.pointer.addOnPointerMotionListener(this);
     }
 
+    public boolean isStretch() { return fullscreenMode == Container.FULLSCREEN_STRETCH; }
+
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         GPUImage.checkIsSupported();
@@ -120,8 +123,12 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
         surfaceWidth = width;
         surfaceHeight = height;
-        viewTransformation.update(width, height, xServer.screenInfo.width, xServer.screenInfo.height);
+        recomputeViewTransformation();
         viewportNeedsUpdate = true;
+    }
+
+    private void recomputeViewTransformation() {
+        viewTransformation.update(surfaceWidth, surfaceHeight, xServer.screenInfo.width, xServer.screenInfo.height, fullscreenMode);
     }
 
     @Override
@@ -161,8 +168,9 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
         }
 
         if (toggleFullscreen) {
-            fullscreen = !fullscreen;
+            fullscreenMode = Container.nextFullscreenMode(fullscreenMode);
             toggleFullscreen = false;
+            recomputeViewTransformation();
             viewportNeedsUpdate = true;
         }
 
@@ -186,7 +194,7 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
         // Update the viewport if necessary
         if (viewportNeedsUpdate && magnifierEnabled) {
-            if (fullscreen) {
+            if (isStretch()) {
                 GLES20.glViewport(0, 0, surfaceWidth, surfaceHeight);
             }
             else {
@@ -218,7 +226,7 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
                 XForm.makeTransform(tmpXForm2, -pointerX, -pointerY, magnifierZoom, magnifierZoom, 0);
             } else {
-                if (!fullscreen) {
+                if (fullscreenMode == Container.FULLSCREEN_OFF) {
                     int pointerY = 0;
                     if (screenOffsetYRelativeToCursor) {
                         short halfScreenHeight = (short) (xServer.screenInfo.height / 2);
@@ -240,7 +248,7 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
             if (cursorVisible && renderCursorEnabled) renderCursor();
 
             // Disable scissor test if magnifier is disabled and not in fullscreen mode
-            if (!magnifierEnabled && !fullscreen) {
+            if (!magnifierEnabled && !isFullscreen()) {
                 GLES20.glDisable(GLES20.GL_SCISSOR_TEST);
             }
         }
@@ -326,6 +334,40 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
         quadVertices.bind(windowMaterial.programId);
 
         try (XLock lock = xServer.lock(XServer.Lockable.DRAWABLE_MANAGER)) {
+            if (magnifierEnabled) {
+                // Apply magnifier transformations if enabled
+                float pointerX = 0;
+                float pointerY = 0;
+                float magnifierZoom = !screenOffsetYRelativeToCursor ? this.magnifierZoom : 1.0f;
+
+                if (magnifierZoom != 1.0f) {
+                    pointerX = Mathf.clamp(xServer.pointer.getX() * magnifierZoom - xServer.screenInfo.width * 0.5f, 0, xServer.screenInfo.width * Math.abs(1.0f - magnifierZoom));
+                }
+
+                if (screenOffsetYRelativeToCursor || magnifierZoom != 1.0f) {
+                    float scaleY = magnifierZoom != 1.0f ? Math.abs(1.0f - magnifierZoom) : 0.5f;
+                    float offsetY = xServer.screenInfo.height * (screenOffsetYRelativeToCursor ? 0.25f : 0.5f);
+                    pointerY = Mathf.clamp(xServer.pointer.getY() * magnifierZoom - offsetY, 0, xServer.screenInfo.height * scaleY);
+                }
+
+                XForm.makeTransform(tmpXForm2, -pointerX, -pointerY, magnifierZoom, magnifierZoom, 0);
+            } else {
+                if (!isFullscreen()) {
+                    int pointerY = 0;
+                    if (screenOffsetYRelativeToCursor) {
+                        short halfScreenHeight = (short) (xServer.screenInfo.height / 2);
+                        pointerY = Mathf.clamp(xServer.pointer.getY() - halfScreenHeight / 2, 0, halfScreenHeight);
+                    }
+
+                    XForm.makeTransform(tmpXForm2, viewTransformation.sceneOffsetX, viewTransformation.sceneOffsetY - pointerY, viewTransformation.sceneScaleX, viewTransformation.sceneScaleY, 0);
+
+                    GLES20.glEnable(GLES20.GL_SCISSOR_TEST);
+                    GLES20.glScissor(viewTransformation.viewOffsetX, viewTransformation.viewOffsetY, viewTransformation.viewWidth, viewTransformation.viewHeight);
+                } else {
+                    XForm.identity(tmpXForm2);
+                }
+            }
+
             for (RenderableWindow window : renderableWindows) {
                 renderDrawable(window.content, window.rootX, window.rootY, windowMaterial);
             }
@@ -443,12 +485,12 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
     }
 
     public void setFullscreen(boolean fullscreen) {
-        this.fullscreen = fullscreen;
+        this.fullscreenMode = fullscreen ? Container.FULLSCREEN_STRETCH : Container.FULLSCREEN_OFF;
         this.viewportNeedsUpdate = true;
     }
 
     public boolean isFullscreen() {
-        return fullscreen;
+        return fullscreenMode != Container.FULLSCREEN_OFF;
     }
 
     public float getMagnifierZoom() {
@@ -607,11 +649,13 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
     @Override
     public void setFullscreenMode(int mode) {
-        fullscreen = (mode != 0);
+        fullscreenMode = mode;
+        recomputeViewTransformation();
+        viewportNeedsUpdate = true;
     }
 
     @Override
-    public int getFullscreenMode() { return fullscreen ? 1 : 0; }
+    public int getFullscreenMode() { return fullscreenMode; }
 
     @Override
     public void setFpsWindowId(int id) {}

@@ -1378,6 +1378,14 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             vkRenderer.setVkPresentMode(pmInt);
             boolean swapRB = container != null && container.getRendererSwapRB();
             vkRenderer.setSwapRB(swapRB);
+            vkRenderer.setScreenEffects(0f, 0f, 1.0f, 1.0f, false, false, false, false);
+
+            if (container != null) {
+                vkRenderer.setFilterMode(container.getRendererFilterMode());
+                vkRenderer.setUpscaler(container.getRendererUpscalerMode());
+                vkRenderer.setHqDownscale(container.getRendererHqDownscale());
+                vkRenderer.setUpscaleSharpness(container.getRendererUpscaleSharpness());
+            }
         }
         rootView.addView(xServerView);
 
@@ -1447,8 +1455,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         }
 
         if (shouldStretch) {
-            // Toggle fullscreen mode based on the final decision
-            renderer.toggleFullscreen();
+            // Set stretch mode based on the final decision
+            renderer.setFullscreenMode(Container.FULLSCREEN_STRETCH);
             touchpadView.toggleFullscreen();
         }
 
@@ -1509,6 +1517,31 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         }
     }
 
+    private void showFullscreenConfigDialog() {
+        final ContentDialog dialog = new ContentDialog(this, R.layout.fullscreen_config_dialog);
+        dialog.setTitle(R.string.toggle_fullscreen);
+        dialog.setIcon(R.drawable.icon_fullscreen);
+
+        Spinner sMode = dialog.findViewById(R.id.SFullscreenMode);
+        String[] modes = {
+            getString(R.string.fullscreen_off),
+            getString(R.string.fullscreen_fit),
+            getString(R.string.fullscreen_stretch),
+            getString(R.string.fullscreen_fill),
+            getString(R.string.fullscreen_integer)
+        };
+        sMode.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, modes));
+        sMode.setSelection(xServerView.getRenderer().getFullscreenMode());
+
+        dialog.setOnConfirmCallback(() -> {
+            int mode = sMode.getSelectedItemPosition();
+            xServerView.getRenderer().setFullscreenMode(mode);
+            touchpadView.toggleFullscreen(); // Trigger UI refresh
+        });
+
+        dialog.show();
+    }
+
     private void showDisplaySessionDialog() {
         final ContentDialog dialog = new ContentDialog(this, R.layout.display_session_dialog);
         dialog.setTitle(R.string.display_and_session);
@@ -1518,25 +1551,15 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             dialog.dismiss();
             ScreenEffectDialog screenEffectDialog = new ScreenEffectDialog(this);
             screenEffectDialog.setOnConfirmCallback(() -> {
-                HostRenderer hostRenderer = xServerView.getRenderer();
-                if (hostRenderer instanceof GLRenderer) {
-                    GLRenderer currentRenderer = (GLRenderer) hostRenderer;
-                    ColorEffect colorEffect = (ColorEffect) currentRenderer.getEffectComposer().getEffect(ColorEffect.class);
-                    FXAAEffect fxaaEffect = (FXAAEffect) currentRenderer.getEffectComposer().getEffect(FXAAEffect.class);
-                    CRTEffect crtEffect = (CRTEffect) currentRenderer.getEffectComposer().getEffect(CRTEffect.class);
-                    ToonEffect toonEffect = (ToonEffect) currentRenderer.getEffectComposer().getEffect(ToonEffect.class);
-                    NTSCCombinedEffect ntscEffect = (NTSCCombinedEffect) currentRenderer.getEffectComposer().getEffect(NTSCCombinedEffect.class);
-                    screenEffectDialog.applyEffects(colorEffect, currentRenderer, fxaaEffect, crtEffect, toonEffect, ntscEffect);
-                }
+                screenEffectDialog.applyEffects();
                 xServerView.requestRender();
             });
             screenEffectDialog.show();
         });
 
         dialog.findViewById(R.id.BTToggleFullscreen).setOnClickListener(v -> {
-            xServerView.getRenderer().toggleFullscreen();
-            touchpadView.toggleFullscreen();
             dialog.dismiss();
+            showFullscreenConfigDialog();
         });
 
         dialog.findViewById(R.id.BTPipMode).setOnClickListener(v -> {

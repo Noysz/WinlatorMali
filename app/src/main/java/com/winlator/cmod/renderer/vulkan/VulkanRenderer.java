@@ -118,7 +118,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     private native void nativeSetToon(long handle, boolean enabled);
     private native void nativeSetCrt(long handle, boolean enabled);
     private native void nativeSetNtsc(long handle, boolean enabled);
-    private native void nativeSetColorGrade(long handle, float brightness, float contrast, float gamma);
+    private native void nativeSetColorGrade(long handle, float brightness, float contrast, float gamma, float saturation);
     private native void nativeSetSwapRB(long handle, boolean enabled);
     private native void nativeSetPresentMode(long handle, int mode);
     private native int[] nativeGetSupportedPresentModes(long handle);
@@ -164,7 +164,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
                     nativeSetToon(nativeHandle, pendingToonEnabled);
                     nativeSetCrt(nativeHandle, pendingCrtEnabled);
                     nativeSetNtsc(nativeHandle, pendingNtscEnabled);
-                    nativeSetColorGrade(nativeHandle, pendingColorBrightness, pendingColorContrast, pendingColorGamma);
+                    nativeSetColorGrade(nativeHandle, pendingColorBrightness, pendingColorContrast, pendingColorGamma, pendingColorSaturation);
                     nativeSetSwapRB(nativeHandle, pendingSwapRB);
                     updateTransform();
                     nativeSetCursorVisible(nativeHandle, cursorVisible);
@@ -294,7 +294,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
         // on the in-game toggle without a surface change (STRETCH ignores viewTransformation anyway).
         if (surfaceWidth > 0 && surfaceHeight > 0)
             viewTransformation.update(surfaceWidth, surfaceHeight,
-                xServer.screenInfo.width, xServer.screenInfo.height);
+                xServer.screenInfo.width, xServer.screenInfo.height, fullscreenMode);
         float zoom = magnifierZoom;
         if (isStretch()) {
             // Cursor-follow magnifier (parity with GLRenderer.drawFrame). The native compositor
@@ -737,18 +737,19 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     // Phase 2 composable screen effects (GL EffectComposer parity). Color grade takes
     // the raw slider values (brightness/contrast -100..100, gamma 0.5..3.0); neutral
     // (0,0,1) is a no-op. FXAA/Toon/CRT/NTSC are binary. Drawer-only / session-live.
-    public void setScreenEffects(float brightness, float contrast, float gamma,
+    public void setScreenEffects(float brightness, float contrast, float gamma, float saturation,
                                  boolean fxaa, boolean toon, boolean crt, boolean ntsc) {
         pendingColorBrightness = brightness;
         pendingColorContrast   = contrast;
         pendingColorGamma      = gamma;
+        pendingColorSaturation = saturation;
         pendingFxaaEnabled = fxaa;
         pendingToonEnabled = toon;
         pendingCrtEnabled  = crt;
         pendingNtscEnabled = ntsc;
         synchronized (lock) {
             if (nativeHandle != 0) {
-                nativeSetColorGrade(nativeHandle, brightness, contrast, gamma);
+                nativeSetColorGrade(nativeHandle, brightness, contrast, gamma, saturation);
                 nativeSetFxaa(nativeHandle, fxaa);
                 nativeSetToon(nativeHandle, toon);
                 nativeSetCrt(nativeHandle, crt);
@@ -775,6 +776,15 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     }
     public void setNativeColorFormat(int format) {}
     public int getNativeColorFormat() { return 0; }
+
+    public float getColorBrightness() { return pendingColorBrightness; }
+    public float getColorContrast() { return pendingColorContrast; }
+    public float getColorGamma() { return pendingColorGamma; }
+    public float getColorSaturation() { return pendingColorSaturation; }
+    public boolean isFxaaEnabled() { return pendingFxaaEnabled; }
+    public boolean isToonEnabled() { return pendingToonEnabled; }
+    public boolean isCrtEnabled() { return pendingCrtEnabled; }
+    public boolean isNtscEnabled() { return pendingNtscEnabled; }
 
     private WinlatorHUD classicHudRef = null;
     private int fpsWindowId = -1;
@@ -829,6 +839,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     private float   pendingColorBrightness = 0.0f;  // -100..100 slider; 0 = neutral
     private float   pendingColorContrast   = 0.0f;  // -100..100 slider; 0 = neutral
     private float   pendingColorGamma      = 1.0f;  // 0.5..3.0 slider; 1.0 = neutral
+    private float   pendingColorSaturation = 1.0f;  // -100..100 slider + 1; 1.0 = neutral
     private boolean pendingSwapRB         = false;
     public int getFpsLimit() { return fpsLimit; }
     public void setFpsLimit(int limit) {
