@@ -1376,10 +1376,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             String pm = container != null ? container.getRendererPresentMode() : "fifo";
             int pmInt = "immediate".equalsIgnoreCase(pm) ? 0 : "mailbox".equalsIgnoreCase(pm) ? 1 : 2;
             vkRenderer.setVkPresentMode(pmInt);
-            float b = container != null ? container.getColorBrightness() : 0.0f;
-            float c = container != null ? container.getColorContrast() : 0.0f;
-            float g = container != null ? container.getColorGamma() : 1.0f;
-            vkRenderer.setScreenEffects(b, c, g, false, false, false, false);
+            boolean swapRB = container != null && container.getRendererSwapRB();
+            vkRenderer.setSwapRB(swapRB);
         }
         rootView.addView(xServerView);
 

@@ -28,6 +28,10 @@
         <item>OpenGL ES</item>
         <item>Vulkan</item>
     </string-array>
+    <string-array name="vulkan_color_entries">
+        <item>BGRA</item>
+        <item>RGBA</item>
+    </string-array>
     <string-array name="vulkan_present_mode_entries">
         <item>FIFO (VSync On)</item>
         <item>Mailbox (Triple Buffer)</item>

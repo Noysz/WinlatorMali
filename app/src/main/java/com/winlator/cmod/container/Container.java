@@ -87,9 +87,7 @@ public class Container {
     private boolean exclusiveXInput = true;
     private UnifiedInputState.EmulationMode emulationMode = UnifiedInputState.EmulationMode.GAME_CONTROLLER;
     private String rendererPresentMode = "fifo";
-    private float colorBrightness = 0.0f;
-    private float colorContrast = 0.0f;
-    private float colorGamma = 1.0f;
+    private boolean rendererSwapRB = false;
 
     private ContainerManager containerManager;
 
@@ -425,14 +423,8 @@ public class Container {
     public String getRendererPresentMode() { return rendererPresentMode; }
     public void setRendererPresentMode(String v) { this.rendererPresentMode = v != null ? v : "fifo"; }
 
-    public float getColorBrightness() { return colorBrightness; }
-    public void setColorBrightness(float v) { this.colorBrightness = v; }
-
-    public float getColorContrast() { return colorContrast; }
-    public void setColorContrast(float v) { this.colorContrast = v; }
-
-    public float getColorGamma() { return colorGamma; }
-    public void setColorGamma(float v) { this.colorGamma = v; }
+    public boolean getRendererSwapRB() { return rendererSwapRB; }
+    public void setRendererSwapRB(boolean v) { this.rendererSwapRB = v; }
 
     public void saveData() {
         try {
@@ -469,9 +461,7 @@ public class Container {
             data.put("exclusiveXInput", exclusiveXInput);
             data.put("emulationMode", emulationMode.name());
             data.put("rendererPresentMode", rendererPresentMode);
-            data.put("colorBrightness", (double) colorBrightness);
-            data.put("colorContrast", (double) colorContrast);
-            data.put("colorGamma", (double) colorGamma);
+            if (rendererSwapRB) data.put("rendererSwapRB", true);
             if (!WineInfo.isMainWineVersion(wineVersion)) data.put("wineVersion", wineVersion);
             FileUtils.writeString(getConfigFile(), data.toString());
         }
@@ -591,14 +581,8 @@ public class Container {
             case "rendererPresentMode" :
                 setRendererPresentMode(data.getString(key));
                 break;
-            case "colorBrightness" :
-                setColorBrightness((float) data.getDouble(key));
-                break;
-            case "colorContrast" :
-                setColorContrast((float) data.getDouble(key));
-                break;
-            case "colorGamma" :
-                setColorGamma((float) data.getDouble(key));
+            case "rendererSwapRB" :
+                setRendererSwapRB(data.getBoolean(key));
                 break;
             }
         }

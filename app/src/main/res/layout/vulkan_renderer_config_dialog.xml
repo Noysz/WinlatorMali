@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="320dp">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="300dp"
@@ -12,8 +12,24 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Colors"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingBottom="4dp" />
+
+        <Spinner
+            style="@style/ComboBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/SColors"
+            android:entries="@array/vulkan_color_entries"
+            android:spinnerMode="dialog" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Present Mode"
             android:textAppearance="?android:attr/textAppearanceMedium"
+            android:paddingTop="12dp"
             android:paddingBottom="4dp" />
 
         <Spinner
@@ -23,57 +39,6 @@
             android:id="@+id/SPresentMode"
             android:entries="@array/vulkan_present_mode_entries"
             android:spinnerMode="dialog" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Color Adjustments"
-            android:textStyle="bold"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:paddingTop="12dp"
-            android:paddingBottom="4dp" />
-
-        <TextView
-            android:id="@+id/TVBrightness"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Brightness: 0"
-            android:paddingTop="4dp" />
-
-        <SeekBar
-            android:id="@+id/SBBrightness"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="200"
-            android:progress="100" />
-
-        <TextView
-            android:id="@+id/TVContrast"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Contrast: 0"
-            android:paddingTop="4dp" />
-
-        <SeekBar
-            android:id="@+id/SBContrast"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="200"
-            android:progress="100" />
-
-        <TextView
-            android:id="@+id/TVGamma"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Gamma: 1.00"
-            android:paddingTop="4dp" />
-
-        <SeekBar
-            android:id="@+id/SBGamma"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="250"
-            android:progress="50" />
 
     </LinearLayout>
 </ScrollView>
