@@ -1378,13 +1378,16 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             vkRenderer.setVkPresentMode(pmInt);
             boolean swapRB = container != null && container.getRendererSwapRB();
             vkRenderer.setSwapRB(swapRB);
-            vkRenderer.setScreenEffects(0f, 0f, 1.0f, 1.0f, false, false, false, false);
 
             if (container != null) {
                 vkRenderer.setFilterMode(container.getRendererFilterMode());
                 vkRenderer.setUpscaler(container.getRendererUpscalerMode());
                 vkRenderer.setHqDownscale(container.getRendererHqDownscale());
                 vkRenderer.setUpscaleSharpness(container.getRendererUpscaleSharpness());
+            }
+
+            if (screenEffectProfile != null && !screenEffectProfile.isEmpty()) {
+                ScreenEffectDialog.applyProfileToRenderer(vkRenderer, preferences, screenEffectProfile);
             }
         }
         rootView.addView(xServerView);
@@ -1436,6 +1439,11 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             }
 
             renderer.setWinlatorHUD(frameRating);
+            if (renderer instanceof com.winlator.cmod.renderer.vulkan.VulkanRenderer) {
+                ((com.winlator.cmod.renderer.vulkan.VulkanRenderer) renderer).setHudFrameTick(winId -> {
+                    if (frameRating != null) frameRating.onFrame();
+                });
+            }
             frameRating.enableByUser();
             rootView.addView(frameRating);
         }
@@ -2033,20 +2041,24 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             envVars.put("WRAPPER_VMEM_MAX_SIZE", maxDeviceMemory);
         
         String presentMode = graphicsDriverConfig.get("presentMode");
-        if (presentMode.contains("immediate")) {
-            envVars.put("WRAPPER_MAX_IMAGE_COUNT", "1");
+        if (presentMode != null && !presentMode.isEmpty()) {
+            if (presentMode.contains("immediate")) {
+                envVars.put("WRAPPER_MAX_IMAGE_COUNT", "1");
+            }
+            envVars.put("MESA_VK_WSI_PRESENT_MODE", presentMode);
         }
-        envVars.put("MESA_VK_WSI_PRESENT_MODE", presentMode);
 
         String resourceType = graphicsDriverConfig.get("resourceType");
-        envVars.put("WRAPPER_RESOURCE_TYPE", resourceType);
+        if (resourceType != null && !resourceType.isEmpty())
+            envVars.put("WRAPPER_RESOURCE_TYPE", resourceType);
 
         String syncFrame = graphicsDriverConfig.get("syncFrame");
-        if (syncFrame.equals("1"))
+        if ("1".equals(syncFrame))
             envVars.put("MESA_VK_WSI_DEBUG", "forcesync");
 
         String disablePresentWait = graphicsDriverConfig.get("disablePresentWait");
-        envVars.put("WRAPPER_DISABLE_PRESENT_WAIT", disablePresentWait);
+        if (disablePresentWait != null && !disablePresentWait.isEmpty())
+            envVars.put("WRAPPER_DISABLE_PRESENT_WAIT", disablePresentWait);
 
         String bcnEmulation = graphicsDriverConfig.get("bcnEmulation");
         String bcnEmulationType = graphicsDriverConfig.get("bcnEmulationType");

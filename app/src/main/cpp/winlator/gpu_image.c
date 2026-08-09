@@ -139,6 +139,15 @@ Java_com_winlator_cmod_renderer_GPUImage_destroyHardwareBuffer(JNIEnv *env, jcla
     }
 }
 
+JNIEXPORT jint JNICALL
+Java_com_winlator_cmod_renderer_GPUImage_unlockHardwareBuffer(JNIEnv *env, jclass obj, jlong ptr) {
+    AHardwareBuffer *ahb = (AHardwareBuffer *)ptr;
+    if (!ahb) return -1;
+    int fence_fd = -1;
+    AHardwareBuffer_unlock(ahb, &fence_fd);
+    return (jint)fence_fd;
+}
+
 // JNI method to lock a hardware buffer
 JNIEXPORT jobject JNICALL
 Java_com_winlator_cmod_renderer_GPUImage_lockHardwareBuffer(JNIEnv *env, jclass obj, jlong hardwareBufferPtr) {

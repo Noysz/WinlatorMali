@@ -282,6 +282,7 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
     @Override
     public void onUpdateWindowContent(Window window) {
+        if (winlatorHUD != null) winlatorHUD.onFrame();
         lsfgManager.notifyRealFramePending();
         if (!lsfgManager.isActive()) xServerView.requestRender();
     }
@@ -321,8 +322,10 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
             GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texture.getTextureId());
-            GLES20.glUniform1i(material.getUniformLocation("texture"), 0);
-            GLES20.glUniform1fv(material.getUniformLocation("xform"), tmpXForm1.length, tmpXForm1, 0);
+            int texLoc = material.textureLoc != -1 ? material.textureLoc : material.getUniformLocation("texture");
+            int xfLoc  = material.xformLoc   != -1 ? material.xformLoc   : material.getUniformLocation("xform");
+            GLES20.glUniform1i(texLoc, 0);
+            GLES20.glUniform1fv(xfLoc, tmpXForm1.length, tmpXForm1, 0);
             GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, quadVertices.count());
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, 0);
         }
@@ -330,7 +333,8 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
     private void renderWindows() {
         windowMaterial.use();
-        GLES20.glUniform2f(windowMaterial.getUniformLocation("viewSize"), xServer.screenInfo.width, xServer.screenInfo.height);
+        int vsLoc = windowMaterial.viewSizeLoc != -1 ? windowMaterial.viewSizeLoc : windowMaterial.getUniformLocation("viewSize");
+        GLES20.glUniform2f(vsLoc, xServer.screenInfo.width, xServer.screenInfo.height);
         quadVertices.bind(windowMaterial.programId);
 
         try (XLock lock = xServer.lock(XServer.Lockable.DRAWABLE_MANAGER)) {
@@ -384,7 +388,8 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
     private void renderCursor() {
         cursorMaterial.use();
-        GLES20.glUniform2f(cursorMaterial.getUniformLocation("viewSize"), xServer.screenInfo.width, xServer.screenInfo.height);
+        int cvsLoc = cursorMaterial.viewSizeLoc != -1 ? cursorMaterial.viewSizeLoc : cursorMaterial.getUniformLocation("viewSize");
+        GLES20.glUniform2f(cvsLoc, xServer.screenInfo.width, xServer.screenInfo.height);
         quadVertices.bind(cursorMaterial.programId);
 
         try (XLock lock = xServer.lock(XServer.Lockable.DRAWABLE_MANAGER)) {

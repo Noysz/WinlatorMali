@@ -459,7 +459,7 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             FileUtils.chmod(box64File, 0755);
         }
 
-        return ProcessHelper.exec(command, execEnvVars.toStringArray(), rootDir, (status) -> {
+        int p = ProcessHelper.exec(command, execEnvVars.toStringArray(), rootDir, (status) -> {
             synchronized (lock) {
                 pid = -1;
             }
@@ -467,7 +467,26 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
             if (terminationCallback != null)
                 terminationCallback.call(status);
         });
+
+        if (p > 0) {
+            final int guestPid = p;
+            new java.util.Timer().schedule(new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    com.winlator.cmod.perf.PerfPriority.boost(guestPid);
+                }
+            }, 3000);
+            new java.util.Timer().schedule(new java.util.TimerTask() {
+                @Override
+                public void run() {
+                    com.winlator.cmod.perf.PerfPriority.boost(guestPid);
+                }
+            }, 7000);
+        }
+        return p;
     }
+
+    public static int getPid() { return pid; }
 
     private void addBox64EnvVars(EnvVars envVars, boolean enableLogs) {
         envVars.put("BOX64_NOBANNER", ProcessHelper.PRINT_DEBUG && enableLogs ? "0" : "1");

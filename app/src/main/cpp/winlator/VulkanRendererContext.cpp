@@ -1734,10 +1734,6 @@ void VulkanRendererContext::updateWindowContentAHB(int64_t id, AHardwareBuffer* 
     if (!ahb) return;
     std::lock_guard<std::mutex> lk(renderMutex);
 
-
-
-
-
     auto cit = ahbImportCache.find(ahb);
     if (cit == ahbImportCache.end()) {
         WinTex tmp{};
@@ -1752,7 +1748,6 @@ void VulkanRendererContext::updateWindowContentAHB(int64_t id, AHardwareBuffer* 
         RLOG("updateWindowContentAHB: imported new AHB %p for id=%" PRId64 " (%dx%d)",
             (void*)ahb, id, tmp.w, tmp.h);
     }
-
 
     WinTex& src = cit->second;
     WinTex& wt  = texMap[id];

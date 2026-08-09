@@ -29,11 +29,42 @@ import java.io.IOException;
 public class PresentExtension implements Extension {
     public static final byte MAJOR_OPCODE = -103;
     private static final int FAKE_INTERVAL = 1000000 / 60;
+    private static final long FIRE_EARLY_NS = 700_000L; // 0.7 ms
     public enum Kind {PIXMAP, MSC_NOTIFY}
     public enum Mode {COPY, FLIP, SKIP}
     private final SparseArray<Event> events = new SparseArray<>();
     private SyncExtension syncExtension;
     private long nextFrameTime = 0;
+    private volatile int frameRateLimit = 0;
+
+    public void setFrameRateLimit(int limit) { this.frameRateLimit = Math.max(0, limit); }
+
+    private static class PendingIdle {
+        Window window; Pixmap pixmap; int serial; int idleFence; long targetNs;
+        PendingIdle(Window w, Pixmap p, int s, int f, long t) {
+            window = w; pixmap = p; serial = s; idleFence = f; targetNs = t;
+        }
+    }
+    private final java.util.concurrent.ConcurrentHashMap<Integer, PendingIdle> pendingIdles =
+        new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static class WindowTiming { long nextIdleNs = 0; }
+    private final java.util.concurrent.ConcurrentHashMap<Integer, WindowTiming> windowTimings =
+        new java.util.concurrent.ConcurrentHashMap<>();
+
+    private volatile android.view.Choreographer choreographer = null;
+    private volatile boolean choreographerChecked = false;
+    private volatile boolean choreographerPosted = false;
+    private final Object choreographerLock = new Object();
+
+    private Thread cpuPacerThread = null;
+    private final java.util.concurrent.PriorityBlockingQueue<PendingIdle> cpuQueue =
+        new java.util.concurrent.PriorityBlockingQueue<>(11,
+            java.util.Comparator.comparingLong(p -> p.targetNs));
+
+    public void close() {
+        if (cpuPacerThread != null) { cpuPacerThread.interrupt(); cpuPacerThread = null; }
+    }
 
     private static abstract class ClientOpcodes {
         private static final byte QUERY_VERSION = 0;
@@ -68,8 +99,85 @@ public class PresentExtension implements Extension {
         return 0;
     }
 
+    private void emitIdleNotify(Window window, Pixmap pixmap, int serial, int idleFence,
+                                 int targetFps, com.winlator.cmod.renderer.vulkan.VulkanRenderer renderer) {
+        if (targetFps <= 0) { sendIdleNotify(window, pixmap, serial, idleFence); return; }
+
+        final long frameNs = 1_000_000_000L / targetFps;
+        long now = System.nanoTime();
+        WindowTiming wt = windowTimings.computeIfAbsent(window.id, k -> new WindowTiming());
+        if (wt.nextIdleNs <= now - frameNs) wt.nextIdleNs = now + frameNs;
+        else wt.nextIdleNs += frameNs;
+        long fireTime = wt.nextIdleNs - FIRE_EARLY_NS;
+
+        if (tryGetChoreographer(renderer) != null) {
+            pendingIdles.put(window.id, new PendingIdle(window, pixmap, serial, idleFence, fireTime));
+            postChoreographerCallback();
+        } else {
+            cpuQueue.offer(new PendingIdle(window, pixmap, serial, idleFence, fireTime));
+        }
+    }
+
+    private android.view.Choreographer tryGetChoreographer(com.winlator.cmod.renderer.vulkan.VulkanRenderer renderer) {
+        if (choreographerChecked) return choreographer;
+        synchronized (choreographerLock) {
+            if (choreographerChecked) return choreographer;
+            choreographerChecked = true;
+            try {
+                choreographer = android.view.Choreographer.getInstance();
+            } catch (Exception ignored) {
+                android.util.Log.w("PresentExtension", "Choreographer unavailable, using CPU pacer");
+            }
+            if (choreographer == null) startCpuPacer();
+            return choreographer;
+        }
+    }
+
+    private final android.view.Choreographer.FrameCallback vsyncCallback = frameTimeNs -> {
+        choreographerPosted = false;
+        boolean anyRemaining = false;
+        for (java.util.Iterator<java.util.Map.Entry<Integer, PendingIdle>> it =
+                pendingIdles.entrySet().iterator(); it.hasNext(); ) {
+            PendingIdle p = it.next().getValue();
+            if (frameTimeNs >= p.targetNs) {
+                it.remove();
+                sendIdleNotify(p.window, p.pixmap, p.serial, p.idleFence);
+            } else anyRemaining = true;
+        }
+        if (anyRemaining) postChoreographerCallback();
+    };
+
+    private void postChoreographerCallback() {
+        if (choreographer == null || choreographerPosted) return;
+        choreographerPosted = true;
+        choreographer.postFrameCallback(vsyncCallback);
+    }
+
+    private void startCpuPacer() {
+        if (cpuPacerThread != null) return;
+        cpuPacerThread = new Thread(() -> {
+            while (!Thread.interrupted()) {
+                PendingIdle p = cpuQueue.peek();
+                if (p == null) { java.util.concurrent.locks.LockSupport.parkNanos(500_000L); continue; }
+                long now = System.nanoTime();
+                if (now >= p.targetNs) {
+                    cpuQueue.poll();
+                    pendingIdles.remove(p.window.id, p);
+                    sendIdleNotify(p.window, p.pixmap, p.serial, p.idleFence);
+                } else {
+                    long diff = p.targetNs - now;
+                    if (diff > 2_000_000L) java.util.concurrent.locks.LockSupport.parkNanos(1_000_000L);
+                    else Thread.yield();
+                }
+            }
+        }, "PresentPacer-CPU");
+        cpuPacerThread.setDaemon(true);
+        cpuPacerThread.setPriority(Thread.MAX_PRIORITY);
+        cpuPacerThread.start();
+    }
+
     private void sendIdleNotify(Window window, Pixmap pixmap, int serial, int idleFence) {
-        if (idleFence != 0) syncExtension.setTriggered(idleFence);
+        if (idleFence != 0 && syncExtension != null) syncExtension.setTriggered(idleFence);
 
         synchronized (events) {
             for (int i = 0; i < events.size(); i++) {
@@ -124,15 +232,34 @@ public class PresentExtension implements Extension {
         if (pixmap == null) throw new BadPixmap(pixmapId);
 
         Drawable content = window.getContent();
-        if (content.visual.depth != pixmap.drawable.visual.depth) throw new BadMatch();
+        int contentDepth = content.visual.depth;
+        int pixmapDepth = pixmap.drawable.visual.depth;
+        boolean depthCompat = (contentDepth == pixmapDepth) ||
+            ((contentDepth == 24 || contentDepth == 32) && (pixmapDepth == 24 || pixmapDepth == 32));
+        if (!depthCompat) throw new BadMatch();
+
+        final com.winlator.cmod.renderer.vulkan.VulkanRenderer renderer =
+            client.xServer.getRenderer() instanceof com.winlator.cmod.renderer.vulkan.VulkanRenderer ?
+                (com.winlator.cmod.renderer.vulkan.VulkanRenderer) client.xServer.getRenderer() : null;
+
+        int targetFps = this.frameRateLimit;
+        if (targetFps <= 0 && renderer != null) targetFps = renderer.getFpsLimit();
 
         long ust = System.nanoTime() / 1000;
         long msc = ust / FAKE_INTERVAL;
 
         synchronized (content.renderLock) {
-            content.copyArea((short)0, (short)0, xOff, yOff, pixmap.drawable.width, pixmap.drawable.height, pixmap.drawable);
-            sendIdleNotify(window, pixmap, serial, idleFence);
-            sendCompleteNotify(window, serial, Kind.PIXMAP, Mode.COPY, ust, msc);
+            if (renderer != null && window.attributes.isMapped()
+                    && pixmap.drawable.getTexture() instanceof GPUImage
+                    && ((GPUImage) pixmap.drawable.getTexture()).getHardwareBufferPtr() != 0) {
+                sendCompleteNotify(window, serial, Kind.PIXMAP, Mode.COPY, ust, msc);
+                renderer.onUpdateWindowContentDirect(window, pixmap.drawable, xOff, yOff);
+                emitIdleNotify(window, pixmap, serial, idleFence, targetFps, renderer);
+            } else {
+                content.copyArea((short)0, (short)0, xOff, yOff, pixmap.drawable.width, pixmap.drawable.height, pixmap.drawable);
+                sendCompleteNotify(window, serial, Kind.PIXMAP, Mode.COPY, ust, msc);
+                emitIdleNotify(window, pixmap, serial, idleFence, targetFps, renderer);
+            }
         }
     }
 
@@ -145,10 +272,15 @@ public class PresentExtension implements Extension {
         if (window == null) throw new BadWindow(windowId);
 
         if (GPUImage.isSupported() && !mask.isEmpty()) {
-            Drawable content = window.getContent();
-            final Texture oldTexture = content.getTexture();
-            if (client.xServer.getRenderer() != null) client.xServer.getRenderer().getXServerView().queueEvent(oldTexture::destroy);
-            content.setTexture(new GPUImage(content.width, content.height));
+            com.winlator.cmod.renderer.HostRenderer hr = client.xServer.getRenderer();
+            if (hr instanceof com.winlator.cmod.renderer.GLRenderer) {
+                Drawable content = window.getContent();
+                final Texture oldTexture = content.getTexture();
+                if (oldTexture != null) {
+                    ((com.winlator.cmod.renderer.GLRenderer)hr).getXServerView().queueEvent(oldTexture::destroy);
+                }
+                content.setTexture(new GPUImage(content.width, content.height));
+            }
         }
 
         synchronized (events) {

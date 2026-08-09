@@ -478,6 +478,12 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
             synchronized (pixmap.renderLock) {
                 if (pixmap.getTexture() instanceof GPUImage) {
                     GPUImage g = (GPUImage) pixmap.getTexture();
+                    long ahbPtr = g.getHardwareBufferPtr();
+                    if (ahbPtr != 0) {
+                        nativeUpdateWindowContentAHB(nativeHandle, did(window.getContent()),
+                            ahbPtr, pixmap.width, pixmap.height, rx, ry);
+                        return;
+                    }
                     java.nio.ByteBuffer vd = g.getVirtualData();
                     if (vd != null) {
                         short s = g.getStride() > 0 ? g.getStride() : pixmap.width;
@@ -509,6 +515,12 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
             synchronized (drawable.renderLock) {
                 if (drawable.getTexture() instanceof GPUImage) {
                     GPUImage g = (GPUImage) drawable.getTexture();
+                    long ahbPtr = g.getHardwareBufferPtr();
+                    if (ahbPtr != 0) {
+                        nativeUpdateWindowContentAHB(nativeHandle, did(drawable),
+                            ahbPtr, drawable.width, drawable.height, rx, ry);
+                        return;
+                    }
                     java.nio.ByteBuffer vd = g.getVirtualData();
                     if (vd != null) {
                         short s = g.getStride() > 0 ? g.getStride() : drawable.width;
@@ -844,6 +856,8 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     public int getFpsLimit() { return fpsLimit; }
     public void setFpsLimit(int limit) {
         this.fpsLimit = limit;
+        com.winlator.cmod.xserver.extensions.PresentExtension pe = xServer.getExtension(com.winlator.cmod.xserver.extensions.PresentExtension.MAJOR_OPCODE);
+        if (pe != null) pe.setFrameRateLimit(limit);
         if (android.os.Build.VERSION.SDK_INT >= 30 && scanoutGameSC != null) {
             float targetFps = limit > 0 ? (float)limit
                 : xServerView.getDisplay() != null

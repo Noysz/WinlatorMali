@@ -338,5 +338,29 @@ public class ScreenEffectDialog extends ContentDialog {
         this.onConfirmCallback = confirmCallback;
     }
 
+    public static void applyProfileToRenderer(HostRenderer hostRenderer, SharedPreferences preferences, String profileName) {
+        if (hostRenderer == null || profileName == null || profileName.isEmpty()) return;
+        Set<String> profiles = preferences.getStringSet("screen_effect_profiles", null);
+        if (profiles == null) return;
 
+        for (String profile : profiles) {
+            String[] parts = profile.split(":");
+            if (parts[0].equals(profileName) && parts.length > 1 && !parts[1].isEmpty()) {
+                KeyValueSet settings = new KeyValueSet(parts[1]);
+                float b = settings.getFloat("brightness", 0);
+                float c = settings.getFloat("contrast", 0);
+                float g = settings.getFloat("gamma", 1.0f);
+                float s = settings.getFloat("saturation", 0);
+                boolean fxaa = settings.getBoolean("fxaa", false);
+                boolean crt  = settings.getBoolean("crt_shader", false);
+                boolean toon = settings.getBoolean("toon_shader", false);
+                boolean ntsc = settings.getBoolean("ntsc_effect", false);
+
+                if (hostRenderer instanceof VulkanRenderer) {
+                    ((VulkanRenderer) hostRenderer).setScreenEffects(b, c, g, s + 1.0f, fxaa, toon, crt, ntsc);
+                }
+                break;
+            }
+        }
+    }
 }

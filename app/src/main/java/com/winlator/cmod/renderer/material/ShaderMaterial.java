@@ -61,28 +61,33 @@ public class ShaderMaterial {
         return "";
     }
 
+    public int textureLoc = -1;
+    public int xformLoc = -1;
+    public int viewSizeLoc = -1;
+
     public void use() {
-        if (programId == 0) programId = compileShaders(getVertexShader(), getFragmentShader());
+        boolean first = (programId == 0);
+        if (first) programId = compileShaders(getVertexShader(), getFragmentShader());
         GLES20.glUseProgram(programId);
 
         for (int i = 0; i < uniforms.size(); i++) {
             int location = uniforms.valueAt(i);
             if (location == -1) {
                 String name = uniforms.keyAt(i);
-                uniforms.put(name, GLES20.glGetUniformLocation(programId, name));
+                location = GLES20.glGetUniformLocation(programId, name);
+                uniforms.setValueAt(i, location);
             }
+        }
+        if (first) {
+            textureLoc = getUniformLocation("texture");
+            xformLoc = getUniformLocation("xform");
+            viewSizeLoc = getUniformLocation("viewSize");
         }
     }
 
     public int getUniformLocation(String name) {
         Integer location = uniforms.get(name);
-        if (location == null) {
-            Log.e("ShaderMaterial", "Uniform " + name + " is not registered in setUniformNames().");
-            return -1;
-        }
-        if (location == -1) {
-            Log.e("ShaderMaterial", "Uniform " + name + " location not found in shader program.");
-        }
+        if (location == null || location == -1) return -1;
         return location;
     }
 

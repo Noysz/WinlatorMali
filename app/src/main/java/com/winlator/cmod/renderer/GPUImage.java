@@ -20,26 +20,20 @@ public class GPUImage extends Texture {
         if (hardwareBufferPtr != 0) {
             virtualData = lockHardwareBuffer(hardwareBufferPtr);
             if (virtualData == null) {
-                System.err.println("Error: Failed to lock hardware buffer");
                 destroyHardwareBuffer(hardwareBufferPtr);
                 hardwareBufferPtr = 0;
             }
-        } else {
-            System.err.println("Error: Failed to create hardware buffer");
         }
     }
-    
+
     public GPUImage(int socketFd) {
         hardwareBufferPtr = hardwareBufferFromSocket(socketFd);
         if (hardwareBufferPtr != 0) {
             virtualData = lockHardwareBuffer(hardwareBufferPtr);
             if (virtualData == null) {
-                System.err.println("Error: Failed to lock hardware buffer");
                 destroyHardwareBuffer(hardwareBufferPtr);
                 hardwareBufferPtr = 0;
             }
-        } else {
-            System.err.println("Error: Failed to create hardware buffer");
         }
     }
 
@@ -50,7 +44,6 @@ public class GPUImage extends Texture {
         if (hardwareBufferPtr != 0) {
             imageKHRPtr = createImageKHR(hardwareBufferPtr, textureId);
             if (imageKHRPtr == 0) {
-                System.err.println("Error: Failed to create EGL image");
                 destroyHardwareBuffer(hardwareBufferPtr);
                 hardwareBufferPtr = 0;
             }
@@ -61,6 +54,10 @@ public class GPUImage extends Texture {
     public void updateFromDrawable(Drawable drawable) {
         if (!isAllocated()) allocateTexture(drawable.width, drawable.height, null);
         needsUpdate = false;
+    }
+
+    public long getHardwareBufferPtr() {
+        return hardwareBufferPtr;
     }
 
     public short getStride() {
@@ -74,6 +71,21 @@ public class GPUImage extends Texture {
 
     public ByteBuffer getVirtualData() {
         return virtualData;
+    }
+
+    public void lock() {
+        if (hardwareBufferPtr != 0 && virtualData == null) {
+            virtualData = lockHardwareBuffer(hardwareBufferPtr);
+        }
+    }
+
+    public int unlock() {
+        if (hardwareBufferPtr != 0 && virtualData != null) {
+            int fence = unlockHardwareBuffer(hardwareBufferPtr);
+            virtualData = null;
+            return fence;
+        }
+        return -1;
     }
 
     @Override
@@ -98,19 +110,15 @@ public class GPUImage extends Texture {
         final short size = 8;
         GPUImage gpuImage = new GPUImage(size, size);
         gpuImage.allocateTexture(size, size, null);
-        supported = gpuImage.hardwareBufferPtr != 0 && gpuImage.imageKHRPtr != 0 && gpuImage.virtualData != null;
+        supported = gpuImage.hardwareBufferPtr != 0 && gpuImage.virtualData != null;
         gpuImage.destroy();
     }
 
     private native long hardwareBufferFromSocket(int fd);
-    
     private native long createHardwareBuffer(short width, short height);
-
     private native void destroyHardwareBuffer(long hardwareBufferPtr);
-
+    private native int  unlockHardwareBuffer(long hardwareBufferPtr);
     private native ByteBuffer lockHardwareBuffer(long hardwareBufferPtr);
-
     private native long createImageKHR(long hardwareBufferPtr, int textureId);
-
     private native void destroyImageKHR(long imageKHRPtr);
 }

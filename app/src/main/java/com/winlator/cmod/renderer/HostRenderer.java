@@ -21,6 +21,7 @@ public interface HostRenderer {
     boolean isScreenOffsetYRelativeToCursor();
     void setFpsWindowId(int id);
     void setWinlatorHUD(Object fr);
+    default void setFrameRating(Object fr) { setWinlatorHUD(fr); }
     int getFpsLimit();
     void setFpsLimit(int limit);
     int getSurfaceWidth();
