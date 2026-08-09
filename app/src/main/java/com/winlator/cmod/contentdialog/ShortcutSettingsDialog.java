@@ -491,19 +491,7 @@ public class ShortcutSettingsDialog extends ContentDialog {
         Spinner sControllerEmulation = view.findViewById(R.id.SControllerEmulation);
         
 
-        // Set dark or light mode background for spinners
-        sGraphicsDriver.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sDXWrapper.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sAudioDriver.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sEmulatorSpinner.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sBox64Preset.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sControlsProfile.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sMIDISoundFont.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sBox64Version.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sFEXCorePreset.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sFEXCoreVersion.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sStartupSelection.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-        sControllerEmulation.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
+        applyDynamicSpinnerStyles(view, isDarkMode);
 
 //        EditText etLC_ALL = view.findViewById(R.id.ETlcall);
         EditText etExecArgs = view.findViewById(R.id.ETExecArgs);
@@ -522,6 +510,17 @@ public class ShortcutSettingsDialog extends ContentDialog {
             // Apply light mode-specific attributes
             textView.setTextColor(Color.parseColor("#bdbdbd")); // Set text color to #bdbdbd
             textView.setBackgroundResource(R.color.window_background_color); // Set light background color
+        }
+    }
+
+    private void applyDynamicSpinnerStyles(View view, boolean isDarkMode) {
+        if (view instanceof Spinner) {
+            ((Spinner) view).setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
+        } else if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                applyDynamicSpinnerStyles(group.getChildAt(i), isDarkMode);
+            }
         }
     }
 

@@ -136,63 +136,14 @@ public class ContainerDetailFragment extends Fragment {
 
 
     private void applyDynamicStyles(View view, boolean isDarkMode) {
-
-
-        // Update Spinners
-        Spinner sScreenSize = view.findViewById(R.id.SScreenSize);
-        sScreenSize.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sWineVersion = view.findViewById(R.id.SWineVersion);
-        sWineVersion.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sGraphicsDriver = view.findViewById(R.id.SGraphicsDriver);
-        sGraphicsDriver.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sDXWrapper = view.findViewById(R.id.SDXWrapper);
-        sDXWrapper.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sAudioDriver = view.findViewById(R.id.SAudioDriver);
-        sAudioDriver.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sEmulator64 = view.findViewById(R.id.SEmulator64);
-        sEmulator64.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sEmulator = view.findViewById(R.id.SEmulator);
-        sEmulator.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sMIDISoundFont = view.findViewById(R.id.SMIDISoundFont);
-        sMIDISoundFont.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        // Update Wine Configuration Tab Spinner styles
-        // Desktop
-        Spinner sDesktopTheme = view.findViewById(R.id.SDesktopTheme);
-        sDesktopTheme.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sDesktopBackgroundType = view.findViewById(R.id.SDesktopBackgroundType);
-        sDesktopBackgroundType.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sMouseWarpOverride = view.findViewById(R.id.SMouseWarpOverride);
-        sMouseWarpOverride.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        // Win Components
-        // Handled in createWinComponentsTab
-
-        // Update Advanced Tab Spinner styles
-
-        Spinner sBox64Preset = view.findViewById(R.id.SBox64Preset);
-        sBox64Preset.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sBox64Version = view.findViewById(R.id.SBox64Version);
-        sBox64Version.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sFEXCoreVersion = view.findViewById(R.id.SFEXCoreVersion);
-        sFEXCoreVersion.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sFEXCorePreset = view.findViewById(R.id.SFEXCorePreset);
-        sFEXCorePreset.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
-
-        Spinner sStartupSelection = view.findViewById(R.id.SStartupSelection);
-        sStartupSelection.setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
+        if (view instanceof Spinner) {
+            ((Spinner) view).setPopupBackgroundResource(isDarkMode ? R.drawable.content_dialog_background_dark : R.drawable.content_dialog_background);
+        } else if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                applyDynamicStyles(group.getChildAt(i), isDarkMode);
+            }
+        }
     }
 
     private void applyDynamicStylesRecursively(View view, boolean isDarkMode) {
