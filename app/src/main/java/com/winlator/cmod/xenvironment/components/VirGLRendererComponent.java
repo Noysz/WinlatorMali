@@ -57,8 +57,8 @@ public class VirGLRendererComponent extends EnvironmentComponent implements Conn
         if (sharedEGLContextPtr != 0) return sharedEGLContextPtr;
         final Thread thread = Thread.currentThread();
         try {
-            GLRenderer renderer = xServer.getRenderer();
-            renderer.xServerView.queueEvent(() -> {
+            com.winlator.cmod.renderer.HostRenderer renderer = xServer.getRenderer();
+            renderer.getXServerView().queueEvent(() -> {
                 sharedEGLContextPtr = getCurrentEGLContextPtr();
 
                 synchronized(thread) {

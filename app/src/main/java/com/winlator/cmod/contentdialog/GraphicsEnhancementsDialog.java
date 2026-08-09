@@ -35,9 +35,10 @@ public class GraphicsEnhancementsDialog extends ContentDialog {
 
         sFPSLimit = findViewById(R.id.SFPSLimit);
 
-        GLRenderer renderer = activity.getXServerView().getRenderer();
+        com.winlator.cmod.renderer.HostRenderer hostRenderer = activity.getXServerView().getRenderer();
+        GLRenderer renderer = hostRenderer instanceof GLRenderer ? (GLRenderer) hostRenderer : null;
 
-        int currentFpsLimit = renderer.getFpsLimit();
+        int currentFpsLimit = hostRenderer != null ? hostRenderer.getFpsLimit() : 0;
         int fpsSelection = 0;
         if (currentFpsLimit == 30) fpsSelection = 1;
         else if (currentFpsLimit == 45) fpsSelection = 2;
@@ -54,7 +55,7 @@ public class GraphicsEnhancementsDialog extends ContentDialog {
         llLSFGSettings = findViewById(R.id.LLLSFGSettings);
         sbLSFGMotionBlur = findViewById(R.id.SBLSFGMotionBlur);
 
-        LSFGEffect lsfgEffect = renderer.getEffectComposer().getEffect(LSFGEffect.class);
+        LSFGEffect lsfgEffect = renderer != null ? renderer.getEffectComposer().getEffect(LSFGEffect.class) : null;
         boolean lsfgEnabled = lsfgEffect != null && lsfgEffect.getManager().isActive();
 
         cbEnableLSFG.setChecked(lsfgEnabled);
@@ -92,10 +93,10 @@ public class GraphicsEnhancementsDialog extends ContentDialog {
         llSharpenSettings = findViewById(R.id.LLSharpenSettings);
         sbSharpenLevel = findViewById(R.id.SBSharpenLevel);
 
-        HDREffect hdrEffect = renderer.getEffectComposer().getEffect(HDREffect.class);
+        HDREffect hdrEffect = renderer != null ? renderer.getEffectComposer().getEffect(HDREffect.class) : null;
         cbEnableHDR.setChecked(hdrEffect != null);
 
-        FSREffect fsrEffect = renderer.getEffectComposer().getEffect(FSREffect.class);
+        FSREffect fsrEffect = renderer != null ? renderer.getEffectComposer().getEffect(FSREffect.class) : null;
         boolean sharpenEnabled = fsrEffect != null;
         cbEnableSharpen.setChecked(sharpenEnabled);
         llSharpenSettings.setVisibility(sharpenEnabled ? View.VISIBLE : View.GONE);
@@ -181,38 +182,42 @@ public class GraphicsEnhancementsDialog extends ContentDialog {
     }
 
     private void applyEffects() {
-        GLRenderer renderer = activity.getXServerView().getRenderer();
-
-        int fpsLimit = 0;
-        int fpsSelection = sFPSLimit.getSelectedItemPosition();
-        if (fpsSelection == 1) fpsLimit = 30;
-        else if (fpsSelection == 2) fpsLimit = 45;
-        else if (fpsSelection == 3) fpsLimit = 60;
-        else if (fpsSelection == 4) fpsLimit = 90;
-        else if (fpsSelection == 5) fpsLimit = 120;
-        renderer.setFpsLimit(fpsLimit);
-
-        boolean lsfgEnabled = cbEnableLSFG.isChecked();
-        renderer.getEffectComposer().toggleLSFGEffect(lsfgEnabled);
-
-        LSFGEffect lsfgEffect = renderer.getEffectComposer().getEffect(LSFGEffect.class);
-        if (lsfgEffect != null && lsfgEnabled) {
-            lsfgEffect.setQuality(sLSFGQuality.getSelectedItemPosition());
-            lsfgEffect.setSharpenAmount(sbLSFGMotionBlur.getValue());
-
-            int targetFPS = 0;
-            int targetFPSSelection = sLSFGTargetFPS.getSelectedItemPosition();
-            if (targetFPSSelection == 1) targetFPS = 30;
-            else if (targetFPSSelection == 2) targetFPS = 40;
-            else if (targetFPSSelection == 3) targetFPS = 50;
-            else if (targetFPSSelection == 4) targetFPS = 60;
-            else if (targetFPSSelection == 5) targetFPS = 90;
-            else if (targetFPSSelection == 6) targetFPS = 120;
-            lsfgEffect.getManager().setTargetFPS(targetFPS);
+        com.winlator.cmod.renderer.HostRenderer hostRenderer = activity.getXServerView().getRenderer();
+        if (hostRenderer != null) {
+            int fpsLimit = 0;
+            int fpsSelection = sFPSLimit.getSelectedItemPosition();
+            if (fpsSelection == 1) fpsLimit = 30;
+            else if (fpsSelection == 2) fpsLimit = 45;
+            else if (fpsSelection == 3) fpsLimit = 60;
+            else if (fpsSelection == 4) fpsLimit = 90;
+            else if (fpsSelection == 5) fpsLimit = 120;
+            hostRenderer.setFpsLimit(fpsLimit);
         }
 
-        renderer.getEffectComposer().toggleHDREffect(cbEnableHDR.isChecked());
-        renderer.getEffectComposer().updateFSREffect(cbEnableSharpen.isChecked(), sSharpenMode.getSelectedItemPosition(), sbSharpenLevel.getValue());
+        if (hostRenderer instanceof GLRenderer) {
+            GLRenderer renderer = (GLRenderer) hostRenderer;
+            boolean lsfgEnabled = cbEnableLSFG.isChecked();
+            renderer.getEffectComposer().toggleLSFGEffect(lsfgEnabled);
+
+            LSFGEffect lsfgEffect = renderer.getEffectComposer().getEffect(LSFGEffect.class);
+            if (lsfgEffect != null && lsfgEnabled) {
+                lsfgEffect.setQuality(sLSFGQuality.getSelectedItemPosition());
+                lsfgEffect.setSharpenAmount(sbLSFGMotionBlur.getValue());
+
+                int targetFPS = 0;
+                int targetFPSSelection = sLSFGTargetFPS.getSelectedItemPosition();
+                if (targetFPSSelection == 1) targetFPS = 30;
+                else if (targetFPSSelection == 2) targetFPS = 40;
+                else if (targetFPSSelection == 3) targetFPS = 50;
+                else if (targetFPSSelection == 4) targetFPS = 60;
+                else if (targetFPSSelection == 5) targetFPS = 90;
+                else if (targetFPSSelection == 6) targetFPS = 120;
+                lsfgEffect.getManager().setTargetFPS(targetFPS);
+            }
+
+            renderer.getEffectComposer().toggleHDREffect(cbEnableHDR.isChecked());
+            renderer.getEffectComposer().updateFSREffect(cbEnableSharpen.isChecked(), sSharpenMode.getSelectedItemPosition(), sbSharpenLevel.getValue());
+        }
 
         activity.getXServerView().requestRender();
     }

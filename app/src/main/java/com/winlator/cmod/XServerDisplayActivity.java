@@ -1,6 +1,7 @@
 package com.winlator.cmod;
 
 import static com.winlator.cmod.core.AppUtils.showToast;
+import com.winlator.cmod.renderer.HostRenderer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -919,7 +920,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     @SuppressLint("SourceLockedOrientationActivity")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        final GLRenderer renderer = xServerView.getRenderer();
+        final HostRenderer renderer = xServerView.getRenderer();
         switch (item.getItemId()) {
             case R.id.main_menu_keyboard:
                 AppUtils.showKeyboard(this);
@@ -967,7 +968,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             return;
         }
 
-        final GLRenderer renderer = xServerView.getRenderer();
+        final HostRenderer renderer = xServerView.getRenderer();
         if (frameRating == null) {
             FrameLayout rootView = findViewById(R.id.FLXServerDisplay);
             hudDataSource = new HudDataSource(this);
@@ -1361,7 +1362,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     private void setupUI() {
         FrameLayout rootView = findViewById(R.id.FLXServerDisplay);
         xServerView = new XServerView(this, xServer);
-        final GLRenderer renderer = xServerView.getRenderer();
+        xServerView.initRenderer(container != null ? container.getRenderer() : "opengl_es");
+        final com.winlator.cmod.renderer.HostRenderer renderer = xServerView.getRenderer();
         renderer.setCursorVisible(false);
 
         if (shortcut != null) {
@@ -1508,13 +1510,16 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             dialog.dismiss();
             ScreenEffectDialog screenEffectDialog = new ScreenEffectDialog(this);
             screenEffectDialog.setOnConfirmCallback(() -> {
-                GLRenderer currentRenderer = xServerView.getRenderer();
-                ColorEffect colorEffect = (ColorEffect) currentRenderer.getEffectComposer().getEffect(ColorEffect.class);
-                FXAAEffect fxaaEffect = (FXAAEffect) currentRenderer.getEffectComposer().getEffect(FXAAEffect.class);
-                CRTEffect crtEffect = (CRTEffect) currentRenderer.getEffectComposer().getEffect(CRTEffect.class);
-                ToonEffect toonEffect = (ToonEffect) currentRenderer.getEffectComposer().getEffect(ToonEffect.class);
-                NTSCCombinedEffect ntscEffect = (NTSCCombinedEffect) currentRenderer.getEffectComposer().getEffect(NTSCCombinedEffect.class);
-                screenEffectDialog.applyEffects(colorEffect, currentRenderer, fxaaEffect, crtEffect, toonEffect, ntscEffect);
+                HostRenderer hostRenderer = xServerView.getRenderer();
+                if (hostRenderer instanceof GLRenderer) {
+                    GLRenderer currentRenderer = (GLRenderer) hostRenderer;
+                    ColorEffect colorEffect = (ColorEffect) currentRenderer.getEffectComposer().getEffect(ColorEffect.class);
+                    FXAAEffect fxaaEffect = (FXAAEffect) currentRenderer.getEffectComposer().getEffect(FXAAEffect.class);
+                    CRTEffect crtEffect = (CRTEffect) currentRenderer.getEffectComposer().getEffect(CRTEffect.class);
+                    ToonEffect toonEffect = (ToonEffect) currentRenderer.getEffectComposer().getEffect(ToonEffect.class);
+                    NTSCCombinedEffect ntscEffect = (NTSCCombinedEffect) currentRenderer.getEffectComposer().getEffect(NTSCCombinedEffect.class);
+                    screenEffectDialog.applyEffects(colorEffect, currentRenderer, fxaaEffect, crtEffect, toonEffect, ntscEffect);
+                }
                 xServerView.requestRender();
             });
             screenEffectDialog.show();

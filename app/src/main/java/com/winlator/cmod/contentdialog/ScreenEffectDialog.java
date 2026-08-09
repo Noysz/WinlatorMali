@@ -69,11 +69,12 @@ public class ScreenEffectDialog extends ContentDialog {
         cbEnableNTSCEffect = findViewById(R.id.CBEnableNTSCEffect);
 
 
-        GLRenderer renderer = activity.getXServerView().getRenderer();
-        if (renderer == null) {
-            Log.e(TAG, "Renderer is null in ScreenEffectDialog initialization!");
+        com.winlator.cmod.renderer.HostRenderer hostRenderer = activity.getXServerView().getRenderer();
+        if (hostRenderer == null || !(hostRenderer instanceof GLRenderer)) {
+            Log.e(TAG, "Renderer is null or not GLRenderer in ScreenEffectDialog initialization!");
             return;
         }
+        GLRenderer renderer = (GLRenderer) hostRenderer;
 
         ColorEffect colorEffect = (ColorEffect) renderer.getEffectComposer().getEffect(ColorEffect.class);
         FXAAEffect fxaaEffect = (FXAAEffect) renderer.getEffectComposer().getEffect(FXAAEffect.class);

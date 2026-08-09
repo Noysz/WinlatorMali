@@ -147,7 +147,7 @@ public class PresentExtension implements Extension {
         if (GPUImage.isSupported() && !mask.isEmpty()) {
             Drawable content = window.getContent();
             final Texture oldTexture = content.getTexture();
-            client.xServer.getRenderer().xServerView.queueEvent(oldTexture::destroy);
+            if (client.xServer.getRenderer() != null) client.xServer.getRenderer().getXServerView().queueEvent(oldTexture::destroy);
             content.setTexture(new GPUImage(content.width, content.height));
         }
 
@@ -212,7 +212,7 @@ public class PresentExtension implements Extension {
                 try (XLock lock = client.xServer.lock(XServer.Lockable.WINDOW_MANAGER, XServer.Lockable.PIXMAP_MANAGER)) {
                     presentPixmap(client, inputStream, outputStream);
                 }
-                enforceAbsoluteFramerate(client.xServer.getRenderer());
+                if (client.xServer.getRenderer() instanceof com.winlator.cmod.renderer.GLRenderer) enforceAbsoluteFramerate((com.winlator.cmod.renderer.GLRenderer) client.xServer.getRenderer());
                 break;
             case ClientOpcodes.SELECT_INPUT:
                 try (XLock lock = client.xServer.lock(XServer.Lockable.WINDOW_MANAGER)) {

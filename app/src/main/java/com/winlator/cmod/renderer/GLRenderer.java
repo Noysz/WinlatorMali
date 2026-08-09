@@ -37,7 +37,7 @@ import android.graphics.Paint;
 import android.opengl.GLUtils;
 import java.util.Locale;
 
-public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindowModificationListener, Pointer.OnPointerMotionListener, android.view.Choreographer.FrameCallback {
+public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowManager.OnWindowModificationListener, Pointer.OnPointerMotionListener, android.view.Choreographer.FrameCallback {
     public final XServerView xServerView;
     private final XServer xServer;
     public final VertexAttribute quadVertices = new VertexAttribute("position", 2);
@@ -578,6 +578,48 @@ public class GLRenderer implements GLSurfaceView.Renderer, WindowManager.OnWindo
             GLES20.glEnable(GLES20.GL_BLEND);
             GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
             renderCursor();
+        }
+    }
+
+    @Override
+    public void setUnviewableWMClasses(String classes) {
+        this.unviewableWMClasses = classes != null ? classes.split(";") : null;
+    }
+
+    public void onSurfaceDestroyed() {}
+
+    @Override
+    public void setFilterMode(int mode) {}
+
+    @Override
+    public void requestRender() {
+        xServerView.requestRender();
+    }
+
+    @Override
+    public XServerView getXServerView() { return xServerView; }
+
+    @Override
+    public void setRenderingEnabled(boolean enabled) {}
+
+    @Override
+    public void forceCleanup() {}
+
+    @Override
+    public void setFullscreenMode(int mode) {
+        fullscreen = (mode != 0);
+    }
+
+    @Override
+    public int getFullscreenMode() { return fullscreen ? 1 : 0; }
+
+    @Override
+    public void setFpsWindowId(int id) {}
+
+    @Override
+    public void setWinlatorHUD(Object fr) {
+        if (fr instanceof com.winlator.cmod.widget.WinlatorHUD) {
+            setWinlatorHUD((com.winlator.cmod.widget.WinlatorHUD) fr);
         }
     }
 }

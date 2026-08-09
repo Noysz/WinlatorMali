@@ -4,6 +4,7 @@ import android.util.SparseArray;
 
 import com.winlator.cmod.core.CursorLocker;
 import com.winlator.cmod.renderer.GLRenderer;
+import com.winlator.cmod.renderer.HostRenderer;
 import com.winlator.cmod.winhandler.WinHandler;
 import com.winlator.cmod.xserver.extensions.BigReqExtension;
 import com.winlator.cmod.xserver.extensions.DRI3Extension;
@@ -36,7 +37,7 @@ public class XServer {
     public final GrabManager grabManager;
     public final CursorLocker cursorLocker;
     private SHMSegmentManager shmSegmentManager;
-    private GLRenderer renderer;
+    private HostRenderer renderer;
     private WinHandler winHandler;
     private final EnumMap<Lockable, ReentrantLock> locks = new EnumMap<>(Lockable.class);
     private boolean relativeMouseMovement = false;
@@ -76,11 +77,11 @@ public class XServer {
         this.simulateTouchScreen = simulateTouchScreen;
     }
 
-    public GLRenderer getRenderer() {
+    public HostRenderer getRenderer() {
         return renderer;
     }
 
-    public void setRenderer(GLRenderer renderer) {
+    public void setRenderer(HostRenderer renderer) {
         this.renderer = renderer;
     }
 
