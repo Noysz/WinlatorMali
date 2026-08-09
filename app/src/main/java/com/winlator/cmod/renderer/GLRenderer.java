@@ -282,7 +282,6 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
 
     @Override
     public void onUpdateWindowContent(Window window) {
-        if (winlatorHUD != null) winlatorHUD.onFrame();
         lsfgManager.notifyRealFramePending();
         if (!lsfgManager.isActive()) xServerView.requestRender();
     }
