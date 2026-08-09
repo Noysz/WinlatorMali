@@ -361,7 +361,17 @@ public class GuestProgramLauncherComponent extends EnvironmentComponent {
                 FileUtils.copy(fakeinputSrc, fakeinputDest);
                 Log.d("GuestLauncher", "Copied libfakeinput.so to imagefs");
             } else {
-                Log.e("GuestLauncher", "libfakeinput.so NOT FOUND in APK: " + fakeinputSrc.getAbsolutePath());
+                String resourcePath = "lib/arm64-v8a/libfakeinput.so";
+                URL res = environment.getContext().getClassLoader().getResource(resourcePath);
+                if (res != null) {
+                    try (InputStream is = res.openStream()) {
+                        Files.copy(is, fakeinputDest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        FileUtils.chmod(fakeinputDest, 0771);
+                        Log.d("GuestLauncher", "Extracted libfakeinput.so from APK resource to imagefs");
+                    }
+                } else {
+                    Log.e("GuestLauncher", "libfakeinput.so NOT FOUND in APK: " + fakeinputSrc.getAbsolutePath());
+                }
             }
         } catch (Exception e) {
             Log.e("GuestLauncher", "Failed to copy libfakeinput.so: " + e.getMessage());
