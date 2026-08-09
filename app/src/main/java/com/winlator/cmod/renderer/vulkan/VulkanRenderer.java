@@ -126,7 +126,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     private static volatile boolean gpuImageChecked = false;
 
     private static long did(Drawable d) {
-        return (long) System.identityHashCode(d);
+        return d != null ? (long) d.id : 0L;
     }
 
     public void onSurfaceCreated(Surface surface) {
@@ -560,10 +560,14 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
 
     @Override
     public void onDestroyWindow(Window window) {
-        final long id = did(window.getContent());
+        final long didVal = window.getContent() != null ? (long) window.getContent().id : 0L;
+        final long widVal = (long) window.id;
         xServerView.queueEvent(() -> {
             synchronized (lock) {
-                if (nativeHandle != 0) nativeRemoveWindow(nativeHandle, id);
+                if (nativeHandle != 0) {
+                    if (didVal != 0) nativeRemoveWindow(nativeHandle, didVal);
+                    nativeRemoveWindow(nativeHandle, widVal);
+                }
             }
             updateScene();
         });
@@ -573,10 +577,14 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
 
     @Override
     public void onUnmapWindow(Window window) {
-        final long id = did(window.getContent());
+        final long didVal = window.getContent() != null ? (long) window.getContent().id : 0L;
+        final long widVal = (long) window.id;
         xServerView.queueEvent(() -> {
             synchronized (lock) {
-                if (nativeHandle != 0) nativeRemoveWindow(nativeHandle, id);
+                if (nativeHandle != 0) {
+                    if (didVal != 0) nativeRemoveWindow(nativeHandle, didVal);
+                    nativeRemoveWindow(nativeHandle, widVal);
+                }
             }
             updateScene();
         });

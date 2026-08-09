@@ -91,6 +91,7 @@ VulkanRendererContext::~VulkanRendererContext() {
     vk_.DeviceWaitIdle(device);
     for (auto& [id, wt] : texMap) destroyWinTex(wt);
     texMap.clear();
+    cleanupAllAHBCache();
     
     for (auto& wt : deleteQueue) {
         if (wt.ds   != VK_NULL_HANDLE) vk_.FreeDescriptorSets(device, winTexPool, 1, &wt.ds);
@@ -1743,10 +1744,14 @@ void VulkanRendererContext::updateWindowContentAHB(int64_t id, AHardwareBuffer* 
         }
         AHardwareBuffer_acquire(ahb);
         ahbImportCache[ahb] = tmp;
-        windowAhbs[id].push_back(ahb);
         cit = ahbImportCache.find(ahb);
         RLOG("updateWindowContentAHB: imported new AHB %p for id=%" PRId64 " (%dx%d)",
             (void*)ahb, id, tmp.w, tmp.h);
+    }
+
+    auto& vec = windowAhbs[id];
+    if (std::find(vec.begin(), vec.end(), ahb) == vec.end()) {
+        vec.push_back(ahb);
     }
 
     WinTex& src = cit->second;
@@ -1777,15 +1782,12 @@ void VulkanRendererContext::setRenderList(const int64_t* ids, const int* xs, con
 void VulkanRendererContext::removeWindow(int64_t id) {
     std::lock_guard<std::mutex> lk(renderMutex);
 
-
-
     auto it = texMap.find(id);
     if (it != texMap.end()) {
         if (!it->second.isAHB) destroyWinTex(it->second);
         else it->second = {};
         texMap.erase(it);
     }
-
 
     auto wit = windowAhbs.find(id);
     if (wit != windowAhbs.end()) {
@@ -1804,6 +1806,23 @@ void VulkanRendererContext::removeWindow(int64_t id) {
 
     renderList.erase(std::remove_if(renderList.begin(),renderList.end(),
         [id](const RenderEntry& e){return e.id==id;}),renderList.end());
+
+    if (!deleteQueue.empty()) {
+        vk_.DeviceWaitIdle(device);
+        for (auto& wt : deleteQueue) {
+            if (wt.ds   != VK_NULL_HANDLE) vk_.FreeDescriptorSets(device, winTexPool, 1, &wt.ds);
+            if (wt.view != VK_NULL_HANDLE) vk_.DestroyImageView(device, wt.view, nullptr);
+            if (wt.img  != VK_NULL_HANDLE) vk_.DestroyImage(device, wt.img, nullptr);
+            if (wt.mem  != VK_NULL_HANDLE) vk_.FreeMemory(device, wt.mem, nullptr);
+            if (wt.stg  != VK_NULL_HANDLE) { vk_.DestroyBuffer(device, wt.stg, nullptr); vk_.FreeMemory(device, wt.stgMem, nullptr); }
+        }
+        deleteQueue.clear();
+    }
+
+    if (texMap.empty()) {
+        cleanupAllAHBCache();
+    }
+
     needsRender.store(true); dirtyCV.notify_one();
 }
 
