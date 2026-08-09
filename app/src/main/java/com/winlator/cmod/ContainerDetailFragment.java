@@ -327,6 +327,9 @@ public class ContainerDetailFragment extends Fragment {
                 isEditMode() ? container.getGraphicsDriver() : Container.DEFAULT_GRAPHICS_DRIVER,
                 isEditMode() ? container.getDXWrapper() : Container.DEFAULT_DXWRAPPER, null);
 
+        Spinner sRenderer = view.findViewById(R.id.SRenderer);
+        AppUtils.setSpinnerSelectionFromIdentifier(sRenderer, isEditMode() ? container.getRenderer() : Container.DEFAULT_RENDERER);
+
         view.findViewById(R.id.BTHelpDXWrapper).setOnClickListener((v) -> AppUtils.showHelpBox(context, v, R.string.dxwrapper_help_content));
 
         final View vBCNConfig = view.findViewById(R.id.BTBCNConfig);
@@ -434,6 +437,7 @@ public class ContainerDetailFragment extends Fragment {
                 String screenSize = getScreenSize(view);
                 String envVars = envVarsView.getEnvVars();
                 String graphicsDriver = StringUtils.parseIdentifier(sGraphicsDriver.getSelectedItem());
+                String renderer = StringUtils.parseIdentifier(sRenderer.getSelectedItem());
                 String graphicsDriverConfig = vGraphicsDriverConfig.getTag().toString();
                 HashMap<String, String> config = GraphicsDriverConfigDialog.parseGraphicsDriverConfig(graphicsDriverConfig);
                 if (config.get("version").isEmpty()) {
@@ -472,6 +476,7 @@ public class ContainerDetailFragment extends Fragment {
                     container.setCPUList(cpuList);
                     container.setCPUListWoW64(cpuListWoW64);
                     container.setGraphicsDriver(graphicsDriver);
+                    container.setRenderer(renderer);
                     container.setGraphicsDriverConfig(graphicsDriverConfig);
                     container.setDXWrapper(dxwrapper);
                     container.setDXWrapperConfig(dxwrapperConfig);
@@ -503,6 +508,7 @@ public class ContainerDetailFragment extends Fragment {
                     data.put("cpuList", cpuList);
                     data.put("cpuListWoW64", cpuListWoW64);
                     data.put("graphicsDriver", graphicsDriver);
+                    data.put("renderer", renderer);
                     data.put("graphicsDriverConfig", graphicsDriverConfig);
                     data.put("dxwrapper", dxwrapper);
                     data.put("dxwrapperConfig", dxwrapperConfig);

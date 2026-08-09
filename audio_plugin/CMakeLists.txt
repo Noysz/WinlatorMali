@@ -4,7 +4,7 @@ project(AlsaPlugins C)
 message("Building ${PROJECT_NAME}")
 
 set(CMAKE_VERBOSE_MAKEFILE on)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -lasound -O2 -fPIC -DPIC")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -lasound -O2 -fPIC -DPIC -Wl,-z,max-page-size=16384")
 
 MESSAGE(STATUS "Compiler options: ${CMAKE_C_FLAGS}")
 

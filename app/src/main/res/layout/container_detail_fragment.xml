@@ -153,6 +153,18 @@
                     android:visibility="gone" />
             </LinearLayout>
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/renderer" />
+
+            <Spinner
+                style="@style/ComboBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/SRenderer"
+                android:entries="@array/renderer_entries" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

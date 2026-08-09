@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.22.1)
 project(Winlator)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wno-unused-function -Wimplicit-function-declaration")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")
 
 add_subdirectory(OpenXR-SDK)
 add_subdirectory(patchelf)
@@ -48,5 +49,23 @@ target_compile_options(fakeinput PRIVATE -Wall -Wextra -fvisibility=hidden)
 target_link_libraries(fakeinput
         log
         dl
+)
+
+add_library(vulkan_renderer SHARED
+        winlator/vulkan_jni.cpp
+        winlator/VulkanRendererContext.cpp
+)
+
+target_compile_options(vulkan_renderer PRIVATE
+        -Wall -Wextra -fvisibility=hidden -std=c++17
+)
+
+target_link_libraries(vulkan_renderer
+        log
+        android
+        vulkan
+        adrenotools
+        dl
+        atomic
 )
 

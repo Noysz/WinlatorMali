@@ -5,6 +5,7 @@
     ]>
 <resources>
     <string name="app_name">Winlator Mali</string>
+    <string name="renderer">Renderer</string>
     <string name="run">Run</string>
     <string name="edit">Edit</string>
     <string name="remove">Remove</string>

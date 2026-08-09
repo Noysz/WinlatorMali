@@ -30,6 +30,7 @@ public class Container {
     public static final String DEFAULT_ENV_VARS = "WRAPPER_MAX_IMAGE_COUNT=0 ZINK_DESCRIPTORS=lazy ZINK_DEBUG=compact MESA_SHADER_CACHE_DISABLE=false MESA_SHADER_CACHE_MAX_SIZE=512MB mesa_glthread=true WINEESYNC=1 DXVK_HUD=devinfo,fps,memory,gpuload,version,api PULSE_LATENCY_MSEC=40 WRAPPER_NO_PATCH_OPCONSTCOMP=1";
     public static final String DEFAULT_SCREEN_SIZE = "1280x720";
     public static final String DEFAULT_GRAPHICS_DRIVER = "wrapper";
+    public static final String DEFAULT_RENDERER = "opengl_es";
     public static final String DEFAULT_AUDIO_DRIVER = "pulseaudio";
     public static final String DEFAULT_EMULATOR = "FEXCore";
     public static final String DEFAULT_DXWRAPPER = "dxvk+vkd3d";
@@ -49,6 +50,7 @@ public class Container {
     private String screenSize = DEFAULT_SCREEN_SIZE;
     private String envVars = DEFAULT_ENV_VARS;
     private String graphicsDriver = DEFAULT_GRAPHICS_DRIVER;
+    private String renderer = DEFAULT_RENDERER;
     private String graphicsDriverConfig = DEFAULT_GRAPHICSDRIVERCONFIG;
     private String dxwrapper = DEFAULT_DXWRAPPER;
     private String dxwrapperConfig = "";
@@ -126,6 +128,14 @@ public class Container {
 
     public void setGraphicsDriver(String graphicsDriver) {
         this.graphicsDriver = graphicsDriver;
+    }
+
+    public String getRenderer() {
+        return renderer;
+    }
+
+    public void setRenderer(String renderer) {
+        this.renderer = renderer != null ? renderer : DEFAULT_RENDERER;
     }
 
     public String getGraphicsDriverConfig() { return this.graphicsDriverConfig; }
@@ -410,6 +420,7 @@ public class Container {
             data.put("cpuList", cpuList);
             data.put("cpuListWoW64", cpuListWoW64);
             data.put("graphicsDriver", graphicsDriver);
+            data.put("renderer", renderer);
             data.put("graphicsDriverConfig", graphicsDriverConfig);
             data.put("emulator", emulator);
             data.put("dxwrapper", dxwrapper);
@@ -465,6 +476,9 @@ public class Container {
                     break;
                 case "graphicsDriver" :
                     setGraphicsDriver(data.getString(key));
+                    break;
+                case "renderer" :
+                    setRenderer(data.getString(key));
                     break;
                 case "graphicsDriverConfig" :
                     setGraphicsDriverConfig(data.getString(key));
