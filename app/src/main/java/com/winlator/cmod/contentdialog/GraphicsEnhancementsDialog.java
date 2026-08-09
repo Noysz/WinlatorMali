@@ -8,6 +8,7 @@ import android.widget.TextView;
 import com.winlator.cmod.R;
 import com.winlator.cmod.XServerDisplayActivity;
 import com.winlator.cmod.renderer.GLRenderer;
+import com.winlator.cmod.renderer.vulkan.VulkanRenderer;
 import com.winlator.cmod.renderer.lsfg.LSFGEffect;
 import com.winlator.cmod.renderer.effects.HDREffect;
 import com.winlator.cmod.renderer.effects.FSREffect;
@@ -37,6 +38,7 @@ public class GraphicsEnhancementsDialog extends ContentDialog {
 
         com.winlator.cmod.renderer.HostRenderer hostRenderer = activity.getXServerView().getRenderer();
         GLRenderer renderer = hostRenderer instanceof GLRenderer ? (GLRenderer) hostRenderer : null;
+        VulkanRenderer vkRenderer = hostRenderer instanceof VulkanRenderer ? (VulkanRenderer) hostRenderer : null;
 
         int currentFpsLimit = hostRenderer != null ? hostRenderer.getFpsLimit() : 0;
         int fpsSelection = 0;
@@ -93,17 +95,21 @@ public class GraphicsEnhancementsDialog extends ContentDialog {
         llSharpenSettings = findViewById(R.id.LLSharpenSettings);
         sbSharpenLevel = findViewById(R.id.SBSharpenLevel);
 
-        HDREffect hdrEffect = renderer != null ? renderer.getEffectComposer().getEffect(HDREffect.class) : null;
-        cbEnableHDR.setChecked(hdrEffect != null);
+        boolean hdrEnabled = renderer != null ? (renderer.getEffectComposer().getEffect(HDREffect.class) != null) : (vkRenderer != null && vkRenderer.isHdrEnabled());
+        cbEnableHDR.setChecked(hdrEnabled);
 
         FSREffect fsrEffect = renderer != null ? renderer.getEffectComposer().getEffect(FSREffect.class) : null;
-        boolean sharpenEnabled = fsrEffect != null;
+        boolean sharpenEnabled = fsrEffect != null || (vkRenderer != null && vkRenderer.isCasEnabled());
         cbEnableSharpen.setChecked(sharpenEnabled);
         llSharpenSettings.setVisibility(sharpenEnabled ? View.VISIBLE : View.GONE);
 
         if (fsrEffect != null) {
             sSharpenMode.setSelection(fsrEffect.getMode());
             sbSharpenLevel.setValue(fsrEffect.getLevel());
+        } else if (vkRenderer != null) {
+            sSharpenMode.setSelection(0);
+            float level = Math.max(1.0f, Math.min(5.0f, (vkRenderer.getCasSharpness() / 100.0f) * 5.0f));
+            sbSharpenLevel.setValue(level);
         } else {
             sSharpenMode.setSelection(0);
             sbSharpenLevel.setValue(3.0f);
@@ -218,7 +224,14 @@ public class GraphicsEnhancementsDialog extends ContentDialog {
             renderer.getEffectComposer().toggleHDREffect(cbEnableHDR.isChecked());
             renderer.getEffectComposer().updateFSREffect(cbEnableSharpen.isChecked(), sSharpenMode.getSelectedItemPosition(), sbSharpenLevel.getValue());
         }
-
+        else if (hostRenderer instanceof VulkanRenderer) {
+            VulkanRenderer vkRenderer = (VulkanRenderer) hostRenderer;
+            vkRenderer.setHdr(cbEnableHDR.isChecked());
+            int casSharpness = Math.round((sbSharpenLevel.getValue() / 5.0f) * 100.0f);
+            if (casSharpness < 0) casSharpness = 0;
+            if (casSharpness > 100) casSharpness = 100;
+            vkRenderer.setCas(cbEnableSharpen.isChecked(), casSharpness);
+        }
         activity.getXServerView().requestRender();
     }
 }

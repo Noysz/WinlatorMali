@@ -797,6 +797,9 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     public boolean isToonEnabled() { return pendingToonEnabled; }
     public boolean isCrtEnabled() { return pendingCrtEnabled; }
     public boolean isNtscEnabled() { return pendingNtscEnabled; }
+    public boolean isCasEnabled() { return pendingCasEnabled; }
+    public int getCasSharpness() { return pendingCasSharpness; }
+    public boolean isHdrEnabled() { return pendingHdrEnabled; }
 
     private WinlatorHUD classicHudRef = null;
     private int fpsWindowId = -1;
