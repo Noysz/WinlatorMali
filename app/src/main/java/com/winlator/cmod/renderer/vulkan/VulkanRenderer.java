@@ -390,7 +390,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
                     }
                 }
             }
-            if (viewable) list.add(new RenderableWindow(window.getContent(), x, y));
+            if (viewable) list.add(new RenderableWindow(window, window.getContent(), x, y));
         }
         for (Window child : window.getChildren())
             collectWindows(list, child, child.getX() + x, child.getY() + y);
@@ -412,13 +412,14 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
             ArrayList<RenderableWindow> ns = new ArrayList<>();
             for (int i = start; i < list.size(); i++) {
                 RenderableWindow rw = list.get(i);
-                if (rw.content != null) ns.add(rw);
+                if (rw.content != null || rw.window != null) ns.add(rw);
             }
             int n = ns.size();
             long[] ids = new long[n]; int[] xs = new int[n]; int[] ys = new int[n];
             for (int i = 0; i < n; i++) {
-                ids[i] = did(ns.get(i).content);
-                xs[i] = ns.get(i).rootX; ys[i] = ns.get(i).rootY;
+                RenderableWindow rw = ns.get(i);
+                ids[i] = rw.content != null ? (long) rw.content.id : (long) rw.window.id;
+                xs[i] = rw.rootX; ys[i] = rw.rootY;
             }
             nativeSetRenderList(nativeHandle, ids, xs, ys, n);
             return;
@@ -429,7 +430,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
             long[] ids = new long[n]; int[] xs = new int[n]; int[] ys = new int[n];
             for (int i = 0; i < n; i++) {
                 RenderableWindow rw = list.get(start + i);
-                ids[i] = did(rw.content);
+                ids[i] = rw.content != null ? (long) rw.content.id : (long) rw.window.id;
                 xs[i] = rw.rootX; ys[i] = rw.rootY;
             }
             nativeSetRenderList(nativeHandle, ids, xs, ys, n);
@@ -440,7 +441,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
         long[] ids = new long[n]; int[] xs = new int[n]; int[] ys = new int[n];
         for (int i = 0; i < n; i++) {
             RenderableWindow rw = list.get(start + i);
-            ids[i] = did(rw.content);
+            ids[i] = rw.content != null ? (long) rw.content.id : (long) rw.window.id;
             xs[i] = rw.rootX; ys[i] = rw.rootY;
         }
         nativeSetRenderList(nativeHandle, ids, xs, ys, n);
@@ -475,19 +476,20 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
         synchronized (lock) {
             if (nativeHandle == 0 || pixmap == null) return;
             int rx = window.getRootX() + xOff, ry = window.getRootY() + yOff;
+            long targetId = window.getContent() != null ? (long) window.getContent().id : (long) window.id;
             synchronized (pixmap.renderLock) {
                 if (pixmap.getTexture() instanceof GPUImage) {
                     GPUImage g = (GPUImage) pixmap.getTexture();
                     long ahbPtr = g.getHardwareBufferPtr();
                     if (ahbPtr != 0) {
-                        nativeUpdateWindowContentAHB(nativeHandle, did(window.getContent()),
+                        nativeUpdateWindowContentAHB(nativeHandle, targetId,
                             ahbPtr, pixmap.width, pixmap.height, rx, ry);
                         return;
                     }
                     java.nio.ByteBuffer vd = g.getVirtualData();
                     if (vd != null) {
                         short s = g.getStride() > 0 ? g.getStride() : pixmap.width;
-                        nativeUpdateWindowContent(nativeHandle, did(window.getContent()), vd,
+                        nativeUpdateWindowContent(nativeHandle, targetId, vd,
                             pixmap.width, pixmap.height, s, rx, ry);
                         return;
                     }
@@ -495,7 +497,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
                 java.nio.ByteBuffer buf = pixmap.getData();
                 if (buf == null) return;
                 short stride = (short)(buf.capacity() / (pixmap.height * 4));
-                nativeUpdateWindowContent(nativeHandle, did(window.getContent()), buf,
+                nativeUpdateWindowContent(nativeHandle, targetId, buf,
                     pixmap.width, pixmap.height, stride, rx, ry);
             }
         }
@@ -888,7 +890,7 @@ public class VulkanRenderer implements WindowManager.OnWindowModificationListene
     @Override public void setRenderingEnabled(boolean enabled) {}
 
     private static class RenderableWindow {
-        public final Drawable content; public int rootX, rootY;
-        public RenderableWindow(Drawable c, int x, int y) { content=c; rootX=x; rootY=y; }
+        public final Window window; public final Drawable content; public int rootX, rootY;
+        public RenderableWindow(Window w, Drawable c, int x, int y) { window=w; content=c; rootX=x; rootY=y; }
     }
 }
