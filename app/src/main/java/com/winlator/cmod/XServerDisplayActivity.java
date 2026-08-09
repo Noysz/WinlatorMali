@@ -974,6 +974,11 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             frameRating = new WinlatorHUD(this);
             frameRating.setDataSource(hudDataSource);
             frameRating.setWrapperName(graphicsDriver);
+            if (container != null && "vulkan".equalsIgnoreCase(container.getRenderer())) {
+                frameRating.onRendererDetected("Vulkan");
+            } else {
+                frameRating.onRendererDetected("OpenGL");
+            }
             renderer.setWinlatorHUD(frameRating);
             rootView.addView(frameRating);
         }
@@ -1406,6 +1411,11 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
             frameRating = new WinlatorHUD(this);
             frameRating.setDataSource(hudDataSource);
             frameRating.setWrapperName(graphicsDriver);
+            if (container != null && "vulkan".equalsIgnoreCase(container.getRenderer())) {
+                frameRating.onRendererDetected("Vulkan");
+            } else {
+                frameRating.onRendererDetected("OpenGL");
+            }
 
             renderer.setWinlatorHUD(frameRating);
             frameRating.enableByUser();
@@ -1882,6 +1892,10 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
         Log.d("GraphicsDriverExtraction", "Adrenotools DriverID: " + adrenoToolsDriverId);
 
         File rootDir = imageFs.getRootDir();
+
+        if (container != null && container.getRenderer() != null) {
+            dxwrapperConfig.put("renderer", container.getRenderer().equals("vulkan") ? "vulkan" : "gl");
+        }
 
         if (dxwrapper.contains("dxvk")) {
             DXVKConfigDialog.setEnvVars(this, dxwrapperConfig, envVars);
