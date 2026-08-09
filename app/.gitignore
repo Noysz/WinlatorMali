@@ -1,3 +1,8 @@
 /.cxx
 /build
 /release
+/*/release/
+/*/debug/
+*.apk
+*.dm
+output-metadata.json
