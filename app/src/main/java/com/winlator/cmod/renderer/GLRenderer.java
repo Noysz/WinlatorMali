@@ -657,6 +657,7 @@ public class GLRenderer implements HostRenderer, GLSurfaceView.Renderer, WindowM
         fullscreenMode = mode;
         recomputeViewTransformation();
         viewportNeedsUpdate = true;
+        requestRender();
     }
 
     @Override
