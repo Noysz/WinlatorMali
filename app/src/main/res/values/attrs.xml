@@ -18,6 +18,12 @@
         <attr name="colorSecondary" format="color" /> <!-- Defines colorSecondary attribute -->
     </declare-styleable>
 
+    <declare-styleable name="AppTheme">
+        <attr name="themeColorPrimary" format="color" />
+        <attr name="themeColorPrimaryDark" format="color" />
+        <attr name="themeColorAccent" format="color" />
+    </declare-styleable>
+
     <attr name="extraKeysButtonTextColor" format="reference" />
     <attr name="extraKeysButtonActiveTextColor" format="reference" />
     <attr name="extraKeysButtonBackgroundColor" format="reference" />
