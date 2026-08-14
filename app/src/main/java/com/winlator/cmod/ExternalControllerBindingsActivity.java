@@ -23,7 +23,6 @@ import android.widget.TextView;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -379,7 +378,7 @@ public class ExternalControllerBindingsActivity extends AppCompatActivity {
         final ControllerBindingsAdapter.ViewHolder holder = (ControllerBindingsAdapter.ViewHolder) recyclerView
                 .findViewHolderForAdapterPosition(position);
         if (holder != null) {
-            final int color = ContextCompat.getColor(this, R.color.colorAccent);
+            final int color = ThemeManager.getAccentColor(this);
             final ValueAnimator animator = ValueAnimator.ofFloat(0.4f, 0.0f);
             animator.setDuration(200);
             animator.setInterpolator(new AccelerateDecelerateInterpolator());
