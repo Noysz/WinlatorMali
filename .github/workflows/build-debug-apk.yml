@@ -1,0 +1,45 @@
+name: Build Debug APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: >-
+          sdkmanager
+          "platforms;android-34"
+          "build-tools;35.0.0"
+          "cmake;3.22.1"
+          "ndk;29.0.14206865"
+
+      - name: Build standard debug APK
+        run: ./gradlew :app:assembleStandardDebug --no-daemon
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: winlator-mali-standard-debug
+          path: app/build/outputs/apk/standard/debug/*.apk
+          if-no-files-found: error
+          retention-days: 7
