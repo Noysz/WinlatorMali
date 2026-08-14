@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/colorPrimaryDark"
+            android:textColor="?attr/themeColorPrimaryDark"
             android:text="Copying files..."
             android:layout_marginBottom="16dp" />
 
@@ -80,6 +80,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="right"
             android:text="@string/cancel"
-            android:textColor="@color/colorAccent" />
+            android:textColor="?attr/themeColorAccent" />
     </LinearLayout>
 </FrameLayout>

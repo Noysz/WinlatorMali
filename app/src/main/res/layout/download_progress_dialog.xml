@@ -37,7 +37,7 @@
                     android:layout_height="wrap_content"
                     app:trackThickness="10dp"
                     app:trackColor="#bdbdbd"
-                    app:indicatorColor="@color/colorAccent"
+                    app:indicatorColor="?attr/themeColorAccent"
                     app:indicatorSize="64dp"
                     android:layout_gravity="center" />
 
@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="20dp"
-                android:textColor="@color/colorPrimaryDark"
+                android:textColor="?attr/themeColorPrimaryDark"
                 android:text="@string/downloading_file" />
         </LinearLayout>
 
