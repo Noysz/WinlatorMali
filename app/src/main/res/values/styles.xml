@@ -5,6 +5,9 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColorPrimary">@color/colorPrimary</item>
+        <item name="themeColorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/window_background_color</item>
         <item name="android:colorBackground">@color/window_background_color</item>
         <item name="android:textViewStyle">@style/TextView</item>
@@ -27,6 +30,9 @@
         <item name="colorAccent">@color/colorAccentDark</item>
         <item name="colorPrimary">@color/colorPrimaryDarkMode</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDarkModeDark</item>
+        <item name="themeColorPrimary">@color/colorPrimary</item>
+        <item name="themeColorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColorAccent">@color/colorAccent</item>
         <item name="android:windowBackground">@color/window_background_color_dark</item>
         <item name="android:colorBackground">@color/window_background_color_dark</item>
         <item name="android:textViewStyle">@style/TextView.Dark</item>
@@ -46,6 +52,9 @@
 
     <!-- Light Theme Fullscreen -->
     <style name="AppThemeFullscreen" parent="@style/AppTheme">
+        <item name="themeColorPrimary">@color/colorPrimary</item>
+        <item name="themeColorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColorAccent">@color/colorAccent</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">#000000</item>
         <item name="android:windowTranslucentStatus">true</item>
@@ -54,6 +63,9 @@
 
     <!-- Dark Theme Fullscreen -->
     <style name="AppThemeFullscreen.Dark" parent="@style/AppTheme.Dark">
+        <item name="themeColorPrimary">@color/colorPrimary</item>
+        <item name="themeColorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColorAccent">@color/colorAccent</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">#000000</item>
         <item name="android:windowTranslucentStatus">true</item>

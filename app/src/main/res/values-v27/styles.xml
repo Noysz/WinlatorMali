@@ -2,6 +2,9 @@
 <resources>
     <!-- Light Theme Fullscreen (for API 27+) -->
     <style name="AppThemeFullscreen" parent="@style/AppTheme">
+        <item name="themeColorPrimary">@color/colorPrimary</item>
+        <item name="themeColorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColorAccent">@color/colorAccent</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">#000000</item>
         <item name="android:windowTranslucentStatus">true</item>
@@ -11,6 +14,9 @@
 
     <!-- Dark Theme Fullscreen (for API 27+) -->
     <style name="AppThemeFullscreen.Dark" parent="@style/AppTheme.Dark">
+        <item name="themeColorPrimary">@color/colorPrimary</item>
+        <item name="themeColorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColorAccent">@color/colorAccent</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowBackground">#000000</item>
         <item name="android:windowTranslucentStatus">true</item>
