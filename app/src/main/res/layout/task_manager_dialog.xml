@@ -90,7 +90,7 @@
                         android:id="@+id/TVCPUTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/colorPrimary"
+                        android:textColor="?attr/themeColorPrimary"
                         android:textStyle="bold" />
 
                     <LinearLayout
@@ -112,7 +112,7 @@
                         android:id="@+id/TVMemoryTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="@color/colorPrimary"
+                        android:textColor="?attr/themeColorPrimary"
                         android:textStyle="bold" />
 
                     <TextView
