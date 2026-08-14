@@ -11,7 +11,7 @@
         android:src="@drawable/icon_info"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:tint="@color/colorAccent"
+        android:tint="?attr/themeColorAccent"
         android:layout_marginRight="10dp" />
 
     <TextView
