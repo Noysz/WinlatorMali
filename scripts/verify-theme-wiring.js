@@ -9,10 +9,14 @@
 // Ini bukan pengganti build — cuma nutup kelas error yg paling gampang kejadian.
 'use strict';
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const REPO = '/root/WinlatorMali';
+// Repo root is derived from this file's location, not hardcoded — CI checks out to
+// /home/runner/work/... and a hardcoded path fails there with EACCES on a same-named path
+// that happens to exist and belong to another user.
+const REPO = path.resolve(__dirname, '..');
 const RES = path.join(REPO, 'app/src/main/res');
 const JAVA = path.join(REPO, 'app/src/main/java/com/winlator/cmod');
 
@@ -87,26 +91,59 @@ const expected = RAW.map(build);
 // Butuh JDK saja (javac + java), TIDAK butuh Android SDK: android.graphics.Color di-stub.
 console.log('=== 0. ThemePreset.java asli dijalanin di JVM vs XML ===');
 let javaValues = null;
+
+// Ketersediaan JDK diprobe TERPISAH dari compile+run. Sebelumnya satu try/catch nutup dua-duanya,
+// dan waktu path repo salah di CI, javac gagal lalu ditelan jadi "JDK ga ada" — pengecekan
+// terkuatnya mati diam-diam sementara workflow tetap lanjut. Kalau javac ADA, gagal compile atau
+// gagal run itu FAIL, bukan SKIP.
+let hasJdk = false;
 try {
     execSync('javac -version', { stdio: 'ignore' });
-    const outDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'themecheck-'));
+    execSync('java -version', { stdio: 'ignore' });
+    hasJdk = true;
+} catch (e) {
+    hasJdk = false;
+}
+
+if (!hasJdk) {
+    console.log('     SKIP — JDK ga ada di PATH (javac/java). Cek di bawah cuma pakai replika JS.');
+    console.log('     CI selalu punya JDK, jadi SKIP di CI = workflow-nya salah setup.');
+} else {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'themecheck-'));
     const stub = path.join(REPO, 'scripts/jvmcheck/android/graphics/Color.java');
     const runner = path.join(REPO, 'scripts/jvmcheck/com/winlator/cmod/ThemePresetRunner.java');
     const real = path.join(JAVA, 'ThemePreset.java');
-    execSync(`javac -nowarn -d ${outDir} ${stub} ${real} ${runner}`, { stdio: 'pipe' });
-    const stdout = execSync(`java -cp ${outDir} com.winlator.cmod.ThemePresetRunner`, { encoding: 'utf8' });
-    check(stdout.includes('JAVA_CONTRAST_PASS'), `runner Java lapor gagal kontras:\n${stdout}`);
-    javaValues = {};
-    for (const line of stdout.split('\n')) {
-        if (!line.includes('|')) continue;
-        const parts = line.trim().split('|');
-        javaValues[parts[0]] = Object.fromEntries(parts.slice(1).map((kv) => kv.split('=')));
+    for (const f of [stub, runner, real]) {
+        check(fs.existsSync(f), `file buat cek JVM ga ada: ${f}`);
     }
-    console.log(`     compile + run OK, ${Object.keys(javaValues).length} preset dari kode produksi`);
-} catch (e) {
-    // Bukan pass diam-diam: dilaporkan sebagai SKIP supaya jelas cek terkuatnya nggak jalan.
-    console.log(`     SKIP — javac/java ga bisa dipakai (${String(e.message).split('\n')[0]})`);
-    console.log('     Cek di bawah cuma membandingkan XML dengan replika JS, bukan dgn kode Java.');
+    let stdout = null;
+    try {
+        execSync(`javac -nowarn -d "${outDir}" "${stub}" "${real}" "${runner}"`, { stdio: 'pipe' });
+    } catch (e) {
+        fail++;
+        console.log(`  FAIL javac GAGAL compile ThemePreset.java:\n${(e.stderr || e.stdout || e.message).toString().trim()}`);
+    }
+    if (fs.existsSync(path.join(outDir, 'com/winlator/cmod/ThemePreset.class'))) {
+        try {
+            stdout = execSync(`java -cp "${outDir}" com.winlator.cmod.ThemePresetRunner`, { encoding: 'utf8' });
+        } catch (e) {
+            fail++;
+            console.log(`  FAIL runner Java exit non-zero:\n${(e.stdout || e.stderr || e.message).toString().trim()}`);
+            stdout = (e.stdout || '').toString();
+        }
+    }
+    if (stdout) {
+        check(stdout.includes('JAVA_CONTRAST_PASS'), `runner Java lapor gagal kontras:\n${stdout}`);
+        javaValues = {};
+        for (const line of stdout.split('\n')) {
+            if (!line.includes('|')) continue;
+            const parts = line.trim().split('|');
+            javaValues[parts[0]] = Object.fromEntries(parts.slice(1).map((kv) => kv.split('=')));
+        }
+        check(Object.keys(javaValues).length === RAW.length,
+            `runner Java ngasih ${Object.keys(javaValues).length} preset, harusnya ${RAW.length}`);
+        console.log(`     compile + run OK, ${Object.keys(javaValues).length} preset dari kode produksi`);
+    }
 }
 
 // ---------- parse theme_overlays.xml ----------
