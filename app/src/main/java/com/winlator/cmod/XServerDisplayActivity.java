@@ -312,6 +312,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ThemeManager.applyTheme(this);
         AppUtils.hideSystemUI(this);
         AppUtils.keepScreenOn(this);
 

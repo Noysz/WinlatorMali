@@ -1,0 +1,65 @@
+name: Verify theme wiring
+
+# Fast checks for the theme-preset system that a Gradle build does NOT catch:
+# generated XML drifting from the Java that produced it, preset order drifting from the
+# style array, and color roles being used in the wrong place. Runs on every push and PR
+# because these are silent failures — the app compiles and installs, then renders text
+# that cannot be read.
+#
+# Deliberately does not need the Android SDK or NDK: android.graphics.Color is stubbed in
+# scripts/jvmcheck, so this finishes in seconds while the APK build takes many minutes.
+
+on:
+  push:
+    paths:
+      - 'app/src/main/java/com/winlator/cmod/ThemePreset.java'
+      - 'app/src/main/java/com/winlator/cmod/ThemeManager.java'
+      - 'app/src/main/res/values/theme_overlays.xml'
+      - 'app/src/main/res/values/attrs.xml'
+      - 'app/src/main/res/layout/**'
+      - 'app/src/main/res/drawable/**'
+      - 'scripts/**'
+      - '.github/workflows/verify-theme.yml'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Compiles and runs the real ThemePreset.java against a Color stub, then checks every
+      # value in theme_overlays.xml against what that code actually produced, plus preset
+      # ordering, attribute declarations and color-role usage.
+      - name: Verify theme wiring
+        run: node scripts/verify-theme-wiring.js
+
+      # The XML is generated, so a hand-edit or a stale regeneration must fail loudly rather
+      # than be silently corrected here.
+      - name: Check generated XML is up to date
+        run: |
+          node scripts/gen-theme-overlays.js
+          if ! git diff --quiet -- app/src/main/res/values/theme_overlays.xml; then
+            echo "::error::theme_overlays.xml is out of date. Run: node scripts/gen-theme-overlays.js"
+            git --no-pager diff -- app/src/main/res/values/theme_overlays.xml
+            exit 1
+          fi
+          echo "theme_overlays.xml matches the generator output"

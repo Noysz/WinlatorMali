@@ -229,11 +229,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <LinearLayout style="@style/FieldSet">
-                    <CheckBox
-                        android:id="@+id/CBDarkMode"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Enable Dark Mode" />
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="12dp"
+                            android:text="@string/theme_preset" />
+                        <Spinner
+                            android:id="@+id/SThemePreset"
+                            style="@style/ComboBox"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:spinnerMode="dialog" />
+                    </LinearLayout>
                 </LinearLayout>
                 <TextView
                     android:id="@+id/TVTheme"

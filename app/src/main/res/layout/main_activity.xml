@@ -16,10 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="?actionBarSize"
             android:id="@+id/Toolbar"
-            android:background="?attr/themeColorPrimary"
+            android:background="?attr/themeSurface"
             app:layout_scrollFlags="enterAlways|scroll"
             app:title="@string/app_name"
-            app:titleTextColor="#ffffff"
+            app:titleTextColor="?attr/themeOnSurface"
             app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium" />
 
         <FrameLayout

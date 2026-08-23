@@ -24,6 +24,37 @@
         <attr name="themeColorAccent" format="color" />
     </declare-styleable>
 
+    <!--
+      Theme-preset color roles. Set by the generated overlays in theme_overlays.xml, one
+      per preset, applied at runtime via ThemeManager.applyTheme(). Values are computed by
+      ThemePreset (contrast-enforced), never hand-picked here.
+
+      Naming follows the surface/on-surface convention: `themeOnX` is what you draw ON TOP
+      of `themeX`. Using a background role where a foreground is meant (or vice versa) is
+      how you get invisible text, so pick by role, not by which hex looks nicer.
+    -->
+    <attr name="themeBackground" format="color" />
+    <attr name="themeSurface" format="color" />
+    <attr name="themeSurfaceVariant" format="color" />
+    <attr name="themeAccent" format="color" />
+
+    <attr name="themeOnBackground" format="color" />
+    <attr name="themeOnSurface" format="color" />
+    <attr name="themeOnSurfaceVariant" format="color" />
+    <attr name="themeOnAccent" format="color" />
+
+    <!-- Accent adjusted to keep 3:1 against themeSurface. Use for accent-colored
+         components sitting on a card; use themeAccent on themeBackground. -->
+    <attr name="themeAccentOnSurface" format="color" />
+    <!-- Darkened accent for low-emphasis fills, borders and inactive tracks. -->
+    <attr name="themeAccentDim" format="color" />
+    <attr name="themeDivider" format="color" />
+
+    <!-- Elevation ramp for raised cards and dialogs, each step further from themeSurface. -->
+    <attr name="themeSurfaceContainer" format="color" />
+    <attr name="themeSurfaceContainerHigh" format="color" />
+    <attr name="themeSurfaceContainerHighest" format="color" />
+
     <attr name="extraKeysButtonTextColor" format="reference" />
     <attr name="extraKeysButtonActiveTextColor" format="reference" />
     <attr name="extraKeysButtonBackgroundColor" format="reference" />

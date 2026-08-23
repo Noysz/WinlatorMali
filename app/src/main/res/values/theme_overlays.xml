@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  GENERATED FILE - DO NOT EDIT BY HAND.
+  Regenerate with: node scripts/gen-theme-overlays.js
+
+  One theme overlay per preset, applied at runtime with
+  Theme.applyStyle(styleId, true) from ThemeManager.applyTheme(). This exists
+  because `?attr/` values are resolved from the theme and cannot be set from
+  SharedPreferences directly, so the 61 `?attr/theme*` references across
+  layout/ and drawable/ can only follow the selected preset through a theme.
+
+  Colors here are computed by ThemePreset (contrast-enforced), NOT hand-picked.
+  ThemeManager.PRESETS is the single source of truth; this file mirrors it.
+
+  Style order matches PRESETS order, and the index is persisted in
+  SharedPreferences - do not reorder, or existing users get a different theme.
+-->
+<resources>
+
+    <!-- 0: Crimson Dusk -->
+    <style name="ThemePreset.CrimsonDusk" parent="">
+        <item name="themeBackground">#FF181A2F</item>
+        <item name="themeSurface">#FF242E49</item>
+        <item name="themeSurfaceVariant">#FF37415C</item>
+        <item name="themeAccent">#FFB4182D</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFADADAD</item>
+        <item name="themeOnAccent">#FFFFFFFF</item>
+        <item name="themeAccentDim">#FF510B14</item>
+        <item name="themeAccentOnSurface">#FFC85464</item>
+        <item name="themeDivider">#FF4F4F4F</item>
+        <item name="themeSurfaceContainer">#FF2D3751</item>
+        <item name="themeSurfaceContainerHigh">#FF353E57</item>
+        <item name="themeSurfaceContainerHighest">#FF3E475E</item>
+        <item name="themeColorAccent">#FFC85464</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFADADAD</item>
+        <item name="colorAccent">#FFC85464</item>
+        <item name="android:windowBackground">#FF181A2F</item>
+        <item name="android:colorBackground">#FF181A2F</item>
+    </style>
+
+    <!-- 1: Mauve Ash -->
+    <style name="ThemePreset.MauveAsh" parent="">
+        <item name="themeBackground">#FF30333A</item>
+        <item name="themeSurface">#FF51403D</item>
+        <item name="themeSurfaceVariant">#FF72676F</item>
+        <item name="themeAccent">#FFB79D9B</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFEBEBEB</item>
+        <item name="themeOnAccent">#FF383838</item>
+        <item name="themeAccentDim">#FF524746</item>
+        <item name="themeAccentOnSurface">#FFB79D9B</item>
+        <item name="themeDivider">#FF626262</item>
+        <item name="themeSurfaceContainer">#FF584845</item>
+        <item name="themeSurfaceContainerHigh">#FF5E4E4C</item>
+        <item name="themeSurfaceContainerHighest">#FF655654</item>
+        <item name="themeColorAccent">#FFB79D9B</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFEBEBEB</item>
+        <item name="colorAccent">#FFB79D9B</item>
+        <item name="android:windowBackground">#FF30333A</item>
+        <item name="android:colorBackground">#FF30333A</item>
+    </style>
+
+    <!-- 2: Violet Cream -->
+    <style name="ThemePreset.VioletCream" parent="">
+        <item name="themeBackground">#FF190019</item>
+        <item name="themeSurface">#FF2B124C</item>
+        <item name="themeSurfaceVariant">#FF522B5B</item>
+        <item name="themeAccent">#FF854F6C</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFAAAAAA</item>
+        <item name="themeOnAccent">#FFFFFFFF</item>
+        <item name="themeAccentDim">#FF3C2431</item>
+        <item name="themeAccentOnSurface">#FF8F5D78</item>
+        <item name="themeDivider">#FF444444</item>
+        <item name="themeSurfaceContainer">#FF341C53</item>
+        <item name="themeSurfaceContainerHigh">#FF3B2559</item>
+        <item name="themeSurfaceContainerHighest">#FF442F61</item>
+        <item name="themeColorAccent">#FF8F5D78</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFAAAAAA</item>
+        <item name="colorAccent">#FF8F5D78</item>
+        <item name="android:windowBackground">#FF190019</item>
+        <item name="android:colorBackground">#FF190019</item>
+    </style>
+
+    <!-- 3: Dusk Coral -->
+    <style name="ThemePreset.DuskCoral" parent="">
+        <item name="themeBackground">#FF2E365A</item>
+        <item name="themeSurface">#FF3F5B8D</item>
+        <item name="themeSurfaceVariant">#FF6B597F</item>
+        <item name="themeAccent">#FFBD6C73</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFDBDBDB</item>
+        <item name="themeOnAccent">#FF1A1A1A</item>
+        <item name="themeAccentDim">#FF553134</item>
+        <item name="themeAccentOnSurface">#FFD5A1A5</item>
+        <item name="themeDivider">#FF7D7D7D</item>
+        <item name="themeSurfaceContainer">#FF476291</item>
+        <item name="themeSurfaceContainerHigh">#FF4D6794</item>
+        <item name="themeSurfaceContainerHighest">#FF566E99</item>
+        <item name="themeColorAccent">#FFD5A1A5</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFDBDBDB</item>
+        <item name="colorAccent">#FFD5A1A5</item>
+        <item name="android:windowBackground">#FF2E365A</item>
+        <item name="android:colorBackground">#FF2E365A</item>
+    </style>
+
+    <!-- 4: Navy Blush -->
+    <style name="ThemePreset.NavyBlush" parent="">
+        <item name="themeBackground">#FF221820</item>
+        <item name="themeSurface">#FF262F45</item>
+        <item name="themeSurfaceVariant">#FF45141B</item>
+        <item name="themeAccent">#FFFE8492</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFAAAAAA</item>
+        <item name="themeOnAccent">#FF3D3D3D</item>
+        <item name="themeAccentDim">#FF723B42</item>
+        <item name="themeAccentOnSurface">#FFFE8492</item>
+        <item name="themeDivider">#FF4F4F4F</item>
+        <item name="themeSurfaceContainer">#FF2F384D</item>
+        <item name="themeSurfaceContainerHigh">#FF373F53</item>
+        <item name="themeSurfaceContainerHighest">#FF40485B</item>
+        <item name="themeColorAccent">#FFFE8492</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFAAAAAA</item>
+        <item name="colorAccent">#FFFE8492</item>
+        <item name="android:windowBackground">#FF221820</item>
+        <item name="android:colorBackground">#FF221820</item>
+    </style>
+
+    <!-- 5: Twilight Rose -->
+    <style name="ThemePreset.TwilightRose" parent="">
+        <item name="themeBackground">#FF0E1F2F</item>
+        <item name="themeSurface">#FF26425A</item>
+        <item name="themeSurfaceVariant">#FF555975</item>
+        <item name="themeAccent">#FFC38EB4</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFD3D3D3</item>
+        <item name="themeOnAccent">#FF333333</item>
+        <item name="themeAccentDim">#FF584051</item>
+        <item name="themeAccentOnSurface">#FFC38EB4</item>
+        <item name="themeDivider">#FF5F5F5F</item>
+        <item name="themeSurfaceContainer">#FF2F4A61</item>
+        <item name="themeSurfaceContainerHigh">#FF375066</item>
+        <item name="themeSurfaceContainerHighest">#FF40586D</item>
+        <item name="themeColorAccent">#FFC38EB4</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFD3D3D3</item>
+        <item name="colorAccent">#FFC38EB4</item>
+        <item name="android:windowBackground">#FF0E1F2F</item>
+        <item name="android:colorBackground">#FF0E1F2F</item>
+    </style>
+
+    <!-- 6: Rust Pine -->
+    <style name="ThemePreset.RustPine" parent="">
+        <item name="themeBackground">#FF12232A</item>
+        <item name="themeSurface">#FF2F3A32</item>
+        <item name="themeSurfaceVariant">#FF545748</item>
+        <item name="themeAccent">#FFDB9F75</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFCACACA</item>
+        <item name="themeOnAccent">#FF3D3D3D</item>
+        <item name="themeAccentDim">#FF634835</item>
+        <item name="themeAccentOnSurface">#FFDB9F75</item>
+        <item name="themeDivider">#FF575757</item>
+        <item name="themeSurfaceContainer">#FF38423B</item>
+        <item name="themeSurfaceContainerHigh">#FF3F4942</item>
+        <item name="themeSurfaceContainerHighest">#FF48514A</item>
+        <item name="themeColorAccent">#FFDB9F75</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFCACACA</item>
+        <item name="colorAccent">#FFDB9F75</item>
+        <item name="android:windowBackground">#FF12232A</item>
+        <item name="android:colorBackground">#FF12232A</item>
+    </style>
+
+    <!-- 7: Grape Sunset -->
+    <style name="ThemePreset.GrapeSunset" parent="">
+        <item name="themeBackground">#FF1D1A39</item>
+        <item name="themeSurface">#FF451952</item>
+        <item name="themeSurfaceVariant">#FF662549</item>
+        <item name="themeAccent">#FFF39F5A</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFAAAAAA</item>
+        <item name="themeOnAccent">#FF424242</item>
+        <item name="themeAccentDim">#FF6D4829</item>
+        <item name="themeAccentOnSurface">#FFF39F5A</item>
+        <item name="themeDivider">#FF4F4F4F</item>
+        <item name="themeSurfaceContainer">#FF4D2359</item>
+        <item name="themeSurfaceContainerHigh">#FF532B5F</item>
+        <item name="themeSurfaceContainerHighest">#FF5B3566</item>
+        <item name="themeColorAccent">#FFF39F5A</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFAAAAAA</item>
+        <item name="colorAccent">#FFF39F5A</item>
+        <item name="android:windowBackground">#FF1D1A39</item>
+        <item name="android:colorBackground">#FF1D1A39</item>
+    </style>
+
+    <!-- 8: Cocoa Cream -->
+    <style name="ThemePreset.CocoaCream" parent="">
+        <item name="themeBackground">#FF291C0E</item>
+        <item name="themeSurface">#FF6E473B</item>
+        <item name="themeSurfaceVariant">#FFA78D78</item>
+        <item name="themeAccent">#FFE1D4C2</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FF292929</item>
+        <item name="themeOnAccent">#FF2A1E12</item>
+        <item name="themeAccentDim">#FF655F57</item>
+        <item name="themeAccentOnSurface">#FFE1D4C2</item>
+        <item name="themeDivider">#FF727272</item>
+        <item name="themeSurfaceContainer">#FF744F43</item>
+        <item name="themeSurfaceContainerHigh">#FF78554A</item>
+        <item name="themeSurfaceContainerHighest">#FF7E5C52</item>
+        <item name="themeColorAccent">#FFE1D4C2</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FF292929</item>
+        <item name="colorAccent">#FFE1D4C2</item>
+        <item name="android:windowBackground">#FF291C0E</item>
+        <item name="android:colorBackground">#FF291C0E</item>
+    </style>
+
+    <!-- 9: Orchid Lavender -->
+    <style name="ThemePreset.OrchidLavender" parent="">
+        <item name="themeBackground">#FF49225B</item>
+        <item name="themeSurface">#FF6E3482</item>
+        <item name="themeSurfaceVariant">#FF7F4494</item>
+        <item name="themeAccent">#FFA56ABD</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFD5D5D5</item>
+        <item name="themeOnAccent">#FF141414</item>
+        <item name="themeAccentDim">#FF4A3055</item>
+        <item name="themeAccentOnSurface">#FFB98BCC</item>
+        <item name="themeDivider">#FF6E6E6E</item>
+        <item name="themeSurfaceContainer">#FF743D87</item>
+        <item name="themeSurfaceContainerHigh">#FF78438A</item>
+        <item name="themeSurfaceContainerHighest">#FF7E4C8F</item>
+        <item name="themeColorAccent">#FFB98BCC</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFD5D5D5</item>
+        <item name="colorAccent">#FFB98BCC</item>
+        <item name="android:windowBackground">#FF49225B</item>
+        <item name="android:colorBackground">#FF49225B</item>
+    </style>
+
+    <!-- 10: Emerald Depth -->
+    <style name="ThemePreset.EmeraldDepth" parent="">
+        <item name="themeBackground">#FF051F20</item>
+        <item name="themeSurface">#FF0B2B26</item>
+        <item name="themeSurfaceVariant">#FF163832</item>
+        <item name="themeAccent">#FF8EB69B</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFAAAAAA</item>
+        <item name="themeOnAccent">#FF3D3D3D</item>
+        <item name="themeAccentDim">#FF405246</item>
+        <item name="themeAccentOnSurface">#FF8EB69B</item>
+        <item name="themeDivider">#FF484848</item>
+        <item name="themeSurfaceContainer">#FF16342F</item>
+        <item name="themeSurfaceContainerHigh">#FF1E3B37</item>
+        <item name="themeSurfaceContainerHighest">#FF294440</item>
+        <item name="themeColorAccent">#FF8EB69B</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFAAAAAA</item>
+        <item name="colorAccent">#FF8EB69B</item>
+        <item name="android:windowBackground">#FF051F20</item>
+        <item name="android:colorBackground">#FF051F20</item>
+    </style>
+
+    <!-- 11: Berry Pink -->
+    <style name="ThemePreset.BerryPink" parent="">
+        <item name="themeBackground">#FF450714</item>
+        <item name="themeSurface">#FF851636</item>
+        <item name="themeSurfaceVariant">#FF9B1E42</item>
+        <item name="themeAccent">#FFCF325F</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFC4C4C4</item>
+        <item name="themeOnAccent">#FFFFFFFF</item>
+        <item name="themeAccentDim">#FF5D172B</item>
+        <item name="themeAccentOnSurface">#FFDC6B8C</item>
+        <item name="themeDivider">#FF666666</item>
+        <item name="themeSurfaceContainer">#FF8A203F</item>
+        <item name="themeSurfaceContainerHigh">#FF8D2845</item>
+        <item name="themeSurfaceContainerHighest">#FF92324E</item>
+        <item name="themeColorAccent">#FFDC6B8C</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFC4C4C4</item>
+        <item name="colorAccent">#FFDC6B8C</item>
+        <item name="android:windowBackground">#FF450714</item>
+        <item name="android:colorBackground">#FF450714</item>
+    </style>
+
+    <!-- 12: Ocean Ice -->
+    <style name="ThemePreset.OceanIce" parent="">
+        <item name="themeBackground">#FF021024</item>
+        <item name="themeSurface">#FF052659</item>
+        <item name="themeSurfaceVariant">#FF1D4274</item>
+        <item name="themeAccent">#FF5483B3</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFAFAFAF</item>
+        <item name="themeOnAccent">#FF141414</item>
+        <item name="themeAccentDim">#FF263B51</item>
+        <item name="themeAccentOnSurface">#FF5483B3</item>
+        <item name="themeDivider">#FF484848</item>
+        <item name="themeSurfaceContainer">#FF102F60</item>
+        <item name="themeSurfaceContainerHigh">#FF193765</item>
+        <item name="themeSurfaceContainerHighest">#FF24406C</item>
+        <item name="themeColorAccent">#FF5483B3</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFAFAFAF</item>
+        <item name="colorAccent">#FF5483B3</item>
+        <item name="android:windowBackground">#FF021024</item>
+        <item name="android:colorBackground">#FF021024</item>
+    </style>
+
+    <!-- 13: Peach Maroon -->
+    <style name="ThemePreset.PeachMaroon" parent="">
+        <item name="themeBackground">#FF4C1D3D</item>
+        <item name="themeSurface">#FF852E4E</item>
+        <item name="themeSurfaceVariant">#FFA33757</item>
+        <item name="themeAccent">#FFDC586D</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFD8D8D8</item>
+        <item name="themeOnAccent">#FF1A1A1A</item>
+        <item name="themeAccentDim">#FF632831</item>
+        <item name="themeAccentOnSurface">#FFE47D8D</item>
+        <item name="themeDivider">#FF6E6E6E</item>
+        <item name="themeSurfaceContainer">#FF8A3755</item>
+        <item name="themeSurfaceContainerHigh">#FF8D3E5B</item>
+        <item name="themeSurfaceContainerHighest">#FF924762</item>
+        <item name="themeColorAccent">#FFE47D8D</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFD8D8D8</item>
+        <item name="colorAccent">#FFE47D8D</item>
+        <item name="android:windowBackground">#FF4C1D3D</item>
+        <item name="android:colorBackground">#FF4C1D3D</item>
+    </style>
+</resources>

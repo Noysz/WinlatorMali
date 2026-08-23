@@ -61,26 +61,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private int selectedProfileId;
     private SharedPreferences sharedPreferences;
     private ContainerManager containerManager;
-    private boolean isDarkMode;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Get shared preferences
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Load the user's preferred theme
-        isDarkMode = sharedPreferences.getBoolean("dark_mode", true);
-
-        // Apply the theme based on the preference
-        if (isDarkMode) {
-            setTheme(R.style.AppTheme_Dark);
-        } else {
-            setTheme(R.style.AppTheme);
-        }
-
+        // Layer the selected theme preset onto this activity's theme. Must happen before
+        // setContentView — views resolve ?attr/ values while inflating.
+        ThemeManager.applyTheme(this);
 
         setContentView(R.layout.main_activity);
 
@@ -99,8 +88,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             actionBar.setHomeAsUpIndicator(R.drawable.icon_action_bar_menu);
         }
 
-        // Determine text color based on dark mode
-        int textColor = isDarkMode ? Color.WHITE : Color.BLACK;
+        // Drawer item labels are painted in Java, so they don't pick up ?attr/ from the theme.
+        int textColor = ThemeManager.getOnSurfaceColor(this);
         setNavigationViewItemTextColor(navigationView, textColor);
 
         // Create Winlator folder if not present
@@ -305,11 +294,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         ContentDialog dialog = new ContentDialog(this, R.layout.about_dialog);
         dialog.findViewById(R.id.LLBottomBar).setVisibility(View.GONE);
 
-        if (isDarkMode) {
-            dialog.getWindow().setBackgroundDrawableResource(R.drawable.content_dialog_background_dark);
-        } else {
-            dialog.getWindow().setBackgroundDrawableResource(R.drawable.content_dialog_background);
-        }
+        dialog.getWindow().setBackgroundDrawableResource(R.drawable.content_dialog_background_dark);
 
         try {
             final PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
