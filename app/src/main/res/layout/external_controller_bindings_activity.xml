@@ -13,7 +13,7 @@
         android:background="?attr/themeSurface"
         app:layout_scrollFlags="enterAlways|scroll"
         app:titleTextColor="?attr/themeOnSurface"
-        app:titleTextAppearance="@style/TextAppearance.AppCompat.Medium" />
+        app:titleTextAppearance="@style/TextAppearance.Cyber.Title" />
 
     <FrameLayout
         android:layout_width="match_parent"

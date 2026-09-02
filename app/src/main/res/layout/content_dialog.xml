@@ -31,6 +31,7 @@
                 android:id="@+id/TVTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Cyber.Title"
                 android:textColor="?attr/themeColorPrimary"
                 android:textStyle="bold"
                 android:textSize="18sp" />

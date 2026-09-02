@@ -153,6 +153,15 @@
         <item name="android:windowBackground">@drawable/content_dialog_background_dark</item>
     </style>
 
+    <!-- Judul pakai font geometris (Fase 4 cyberpunk). Sengaja style sendiri, BUKAN
+         android:fontFamily di tema: kalau ditaruh di tema, SEMUA TextView kena termasuk
+         label form padat (Environment Variables/Settings) yang justru jadi susah dibaca
+         pakai huruf angular. Parent-nya sama dengan yang dulu dipakai Toolbar, jadi
+         ukuran dan warna judul ga bergeser — yang berubah cuma fontnya. -->
+    <style name="TextAppearance.Cyber.Title" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:fontFamily">@font/rajdhani</item>
+    </style>
+
     <!-- EditText Styles -->
     <style name="EditText">
         <item name="android:layout_width">match_parent</item>

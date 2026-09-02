@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rajdhani, SIL OFL 1.1 — teks lisensi di third_party/rajdhani/OFL.txt, file .ttf
+     dibundel apa adanya (tanpa subset) biar ga kena klausa modifikasi.
+
+     Cuma 2 berat yang dibundel karena font ini dipakai HANYA di judul: Toolbar minta
+     berat normal (400), judul dialog minta bold (700). Weight 400 ga ada di daftar, jadi
+     Typeface.findBestFont ngasih yang paling deket = 600 SemiBold — itu yang dimau, dan
+     itu sebabnya Regular ga perlu ikut dibundel. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
+        android:font="@font/rajdhani_semibold"
+        android:fontStyle="normal"
+        android:fontWeight="600" />
+    <font
+        android:font="@font/rajdhani_bold"
+        android:fontStyle="normal"
+        android:fontWeight="700" />
+</font-family>
