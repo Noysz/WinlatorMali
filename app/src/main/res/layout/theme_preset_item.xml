@@ -4,8 +4,9 @@
      Warna TIDAK di-set di sini. Tiap sel nampilin preset yg beda, sementara `?attr/`
      cuma bisa ngasih warna preset yg SEDANG aktif — jadi swatch, bar accent, teks, dan
      tint centang semuanya dipasang ThemePresetAdapter dari ThemeManager.PRESETS.get(i).
-     Itu juga alasan bentuk rounded-nya dibikin GradientDrawable di Java, bukan <shape>:
-     shape XML warnanya statis, dan setBackgroundColor bakal nimpa drawable-nya. -->
+     Itu juga alasan bentuk cut-corner-nya dibikin CutCornerDrawable di Java, bukan
+     drawable resource: resource warnanya statis, dan setBackgroundColor bakal nimpa
+     drawable-nya. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -34,12 +35,15 @@
             android:textSize="10sp" />
     </LinearLayout>
 
+    <!-- margin 9dp, bukan 7: swatch dipotong 8dp di sudut. Sudut kotak centang jaraknya
+         (margin - 4dp padding sel) dari sudut swatch di dua arah, jadi dia masih ada DI
+         DALAM potongan selama (margin-4)*2 < 8 — alias margin < 8dp. 9 = lolos + sisa. -->
     <ImageView
         android:id="@+id/IVPresetCheck"
         android:layout_width="18dp"
         android:layout_height="18dp"
         android:layout_gravity="top|end"
-        android:layout_margin="7dp"
+        android:layout_margin="9dp"
         android:contentDescription="@string/theme_preset_selected"
         android:src="@drawable/ic_check"
         android:visibility="gone" />

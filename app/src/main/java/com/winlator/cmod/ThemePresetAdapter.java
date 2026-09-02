@@ -1,8 +1,6 @@
 package com.winlator.cmod;
 
-import android.content.Context;
-import android.graphics.drawable.GradientDrawable;
-import android.util.TypedValue;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.winlator.cmod.core.Callback;
+import com.winlator.cmod.core.UnitUtils;
+import com.winlator.cmod.widget.CutCornerDrawable;
 
 /**
  * Grid of theme presets for the Settings screen: each cell previews one preset and the selected one
@@ -23,8 +23,8 @@ import com.winlator.cmod.core.Callback;
  * A cell must paint the colors of the preset it represents, not of the preset currently in effect.
  * {@code ?attr/theme*} resolves against the active theme, so it can only ever produce one preset's
  * palette — useless for a picker showing eighteen. The values therefore come straight from
- * {@link ThemeManager#PRESETS}. Rounded shapes are built as {@link GradientDrawable} rather than a
- * {@code <shape>} resource for the same reason: a shape resource carries a fixed color, and
+ * {@link ThemeManager#PRESETS}, and the shapes are built as {@link CutCornerDrawable} rather than
+ * drawable resources for the same reason: a resource carries a fixed color, and
  * {@code setBackgroundColor} would replace the drawable (and its corners) instead of recoloring it.
  *
  * <p>Every color pair used here is one that ThemePreset already guarantees contrast for
@@ -32,8 +32,8 @@ import com.winlator.cmod.core.Callback;
  * palettes get appended to PRESETS later.
  */
 public class ThemePresetAdapter extends RecyclerView.Adapter<ThemePresetAdapter.ViewHolder> {
-    private static final float SWATCH_RADIUS_DP = 4f;
-    private static final float ACCENT_RADIUS_DP = 3f;
+    private static final float SWATCH_CUT_DP = 8f;
+    private static final float ACCENT_CUT_DP = 4f;
     private static final float BORDER_DP = 1f;
     private static final float BORDER_SELECTED_DP = 2f;
 
@@ -61,17 +61,16 @@ public class ThemePresetAdapter extends RecyclerView.Adapter<ThemePresetAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final ThemePreset preset = ThemeManager.PRESETS.get(position);
-        final Context context = holder.itemView.getContext();
         final boolean isSelected = position == selectedIndex;
 
         // Border pakai accentOnSurface waktu terpilih (dijamin 3:1 lawan surface) dan divider
         // waktu tidak — dua-duanya diukur lawan surface, yg persis warna isi swatch-nya.
-        holder.swatch.setBackground(roundedRect(context, SWATCH_RADIUS_DP, preset.surface,
+        holder.swatch.setBackground(cutRect(SWATCH_CUT_DP, preset.surface,
                 isSelected ? BORDER_SELECTED_DP : BORDER_DP,
                 isSelected ? preset.accentOnSurface : preset.divider));
         // primary MENTAH, bukan accentOnSurface: preview harusnya nunjukin warna brand preset
         // apa adanya, termasuk kalau kontrasnya tipis — itu informasi buat yg milih.
-        holder.accent.setBackground(roundedRect(context, ACCENT_RADIUS_DP, preset.primary, 0, 0));
+        holder.accent.setBackground(cutRect(ACCENT_CUT_DP, preset.primary, 0, 0));
         holder.name.setText(preset.name);
         holder.name.setTextColor(preset.onSurface);
 
@@ -89,20 +88,10 @@ public class ThemePresetAdapter extends RecyclerView.Adapter<ThemePresetAdapter.
         return ThemeManager.PRESETS.size();
     }
 
-    /** Rounded rectangle with an optional stroke. {@code strokeDp <= 0} means no stroke. */
-    private static GradientDrawable roundedRect(Context context, float radiusDp, int fillColor,
-                                                float strokeDp, int strokeColor) {
-        GradientDrawable shape = new GradientDrawable();
-        shape.setShape(GradientDrawable.RECTANGLE);
-        shape.setCornerRadius(dpToPx(context, radiusDp));
-        shape.setColor(fillColor);
-        if (strokeDp > 0) shape.setStroke(Math.round(dpToPx(context, strokeDp)), strokeColor);
-        return shape;
-    }
-
-    private static float dpToPx(Context context, float dp) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                context.getResources().getDisplayMetrics());
+    /** Chamfered rectangle with an optional outline. {@code strokeDp <= 0} means no outline. */
+    private static Drawable cutRect(float cutDp, int fillColor, float strokeDp, int strokeColor) {
+        return new CutCornerDrawable(fillColor, UnitUtils.dpToPx(cutDp),
+                strokeDp > 0 ? UnitUtils.dpToPx(strokeDp) : 0f, strokeColor);
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
