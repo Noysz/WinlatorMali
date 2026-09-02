@@ -335,6 +335,15 @@
         <item name="android:background">@drawable/bordered_panel_dark</item>
     </style>
 
+    <!-- Panel Settings pakai bingkai HUD (Fase 4 Task 2). Sengaja style turunan, BUKAN
+         ganti @drawable/bordered_panel langsung: bordered_panel kepake 34 tempat termasuk
+         container_detail_fragment (layar Environment Variables) — kalau diganti global,
+         layar yang padat teks itu ikut penuh bingkai bersudut, dan itu justru yang
+         dilarang brief ("bukan ditempel ke setiap View"). -->
+    <style name="FieldSet.Hud" parent="FieldSet">
+        <item name="android:background">@drawable/bg_panel_outline</item>
+    </style>
+
     <style name="FieldSetLabel">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>

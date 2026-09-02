@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bingkai panel: outline tipis, interior transparan (Fase 4 Task 2).
+     Bedanya dari @drawable/bordered_panel yang lama: sudutnya dipotong 45 derajat, bukan
+     busur radius, dan potongannya cuma di 2 sudut berseberangan (kiri-atas + kanan-bawah).
+     Asimetri ini niat: di sheet referensi bingkai jarang dipotong rata keempat sudut —
+     biasanya satu-dua sudut aja yang kena step/notch.
+
+     CutCornerDrawable, bukan <vector>: vector nge-map viewport-nya per-axis, jadi chamfer
+     ikut miring begitu panel ga se-aspect-ratio sama gambar aslinya — dan panel FieldSet
+     itu match_parent x wrap_content, aspect-nya beda-beda tiap panel.
+
+     cutFillColor sengaja ga di-set → interior tetap transparan, cuma garisnya digambar
+     ("garis tipis, bukan solid fill"). -->
+<com.winlator.cmod.widget.CutCornerDrawable
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cutSizeTopLeft="@dimen/cut_corner_large"
+    app:cutSizeBottomRight="@dimen/cut_corner_large"
+    app:cutStrokeColor="?attr/themeDivider"
+    app:cutStrokeWidth="1.5dp" />

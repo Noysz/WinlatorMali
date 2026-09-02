@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Corner mark viewfinder: 4 siku di sudut, sisi tengahnya BOLONG (Fase 4 Task 2).
+     Proporsi diambil dari sheet referensi "Isolated Black PNG" (487aff93): tiap sisi
+     kira-kira 20% ink di dua ujung + 60% kosong di tengah, jadi lengan = 9 dari 44.
+
+     Warna struktural (themeOnSurfaceVariant), BUKAN accent: di gambar referensi warna
+     merah cuma ~8% area, dipakai buat 1 elemen penonjol per komposisi — kalau bingkai
+     ikut merah, budget accent-nya habis di dekorasi.
+
+     Dipakai sbg background wadah persegi (ikon container). Stroke di <vector> di-skala
+     per-axis, jadi kalau wadahnya jauh dari 1:1 lengan horizontal dan vertikal beda
+     ketebalan. Buat bingkai yg harus melar bebas pakai @drawable/bg_panel_outline.
+
+     1 unit viewport = 1dp (44 : 44dp), jadi angka di pathData kebaca langsung sbg dp.
+     Semua koordinat digeser 0.75 = setengah strokeWidth, biar garis ga kepotong tepi. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+
+    <path
+        android:pathData="M0.75,9.75 L0.75,0.75 L9.75,0.75
+                          M34.25,0.75 L43.25,0.75 L43.25,9.75
+                          M43.25,34.25 L43.25,43.25 L34.25,43.25
+                          M9.75,43.25 L0.75,43.25 L0.75,34.25"
+        android:strokeColor="?attr/themeOnSurfaceVariant"
+        android:strokeWidth="1.5"
+        android:strokeLineJoin="miter"
+        android:strokeLineCap="butt" />
+</vector>

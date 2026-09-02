@@ -22,6 +22,13 @@
             app:titleTextColor="?attr/themeOnSurface"
             app:titleTextAppearance="@style/TextAppearance.Cyber.Title" />
 
+        <!-- Tepi bawah header (Fase 4 Task 2). 4dp, bukan 1dp: tanda accent di tengah
+             divider-nya setinggi 4dp, kalau View-nya lebih pendek tanda itu ke-clip. -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:background="@drawable/divider_hud_notched" />
+
         <FrameLayout
             android:id="@+id/FLFragmentContainer"
             android:layout_width="match_parent"

@@ -15,6 +15,13 @@
         app:titleTextColor="?attr/themeOnSurface"
         app:titleTextAppearance="@style/TextAppearance.Cyber.Title" />
 
+    <!-- Tepi bawah header, sama kaya main_activity (Fase 4 Task 2). 4dp karena tanda
+         accent di tengah divider-nya setinggi 4dp. -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="@drawable/divider_hud_notched" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">

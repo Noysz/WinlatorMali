@@ -17,7 +17,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -101,7 +101,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -185,7 +185,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -228,7 +228,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -254,7 +254,7 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -313,7 +313,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -353,7 +353,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -421,7 +421,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
                     <CheckBox
                         android:id="@+id/CBEnableWineDebug"
                         android:layout_width="wrap_content"
@@ -460,7 +460,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -523,7 +523,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <LinearLayout style="@style/FieldSet">
+                <LinearLayout style="@style/FieldSet.Hud">
 
                     <Button
                         style="@style/ButtonPositive"

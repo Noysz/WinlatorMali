@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Garis pembatas dengan notch di tengah + tanda accent kecil (Fase 4 Task 2).
+     Bentuknya diambil dari sheet "199 Futuristic Graphic Element": bar tipis panjang
+     yang putus di tengah, dan di titik putusnya ada blok kecil.
+
+     Notch = celah ASLI (dua bar terpisah), bukan kotak sewarna background yang ditumpuk
+     di atas garis. Kalau pakai kotak penutup, notch-nya cuma bener di atas satu warna
+     surface dan bakal keliatan salah begitu divider ini dipasang di panel lain.
+
+     Celahnya dibikin pakai inset FRAKSI (47% | 6% celah | 47%) supaya posisi notch
+     tetap di tengah berapa pun lebar View. InsetDrawable memang nerima persen di attr
+     inset yang sama (AOSP InsetDrawable.getInset: peekValue -> TYPE_FRACTION ->
+     getFraction; attrs.xml deklarasinya format="fraction|dimension"), ada sejak API 23,
+     jadi aman di minSdk 26. Alternatif <vector> ga bisa: viewport-nya di-skala per-axis,
+     notch-nya bakal melar ikut lebar.
+
+     gravity sengaja "center_vertical" (BUKAN "center"): LayerDrawable.resolveGravity cuma
+     nambahin FILL_HORIZONTAL kalau gravity-nya belum punya komponen horizontal. "center"
+     udah punya, jadi lebar layer ke-hitung dari intrinsic width — dan intrinsic width
+     inset+shape itu -1 → item-nya ga kegambar sama sekali.
+
+     View pemakainya harus setinggi >= 4dp, kalau kurang tanda accent-nya ke-clip. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- bar kiri: 0% .. 47% -->
+    <item
+        android:gravity="center_vertical"
+        android:height="1dp">
+        <inset android:insetRight="53%">
+            <shape android:shape="rectangle">
+                <solid android:color="?attr/themeDivider" />
+            </shape>
+        </inset>
+    </item>
+
+    <!-- bar kanan: 53% .. 100% -->
+    <item
+        android:gravity="center_vertical"
+        android:height="1dp">
+        <inset android:insetLeft="53%">
+            <shape android:shape="rectangle">
+                <solid android:color="?attr/themeDivider" />
+            </shape>
+        </inset>
+    </item>
+
+    <!-- tanda accent di dalam celah: 48% .. 52%.
+         themeAccent, BUKAN themeColorAccent: yang dibutuhin di sini peran BACKGROUND (ini
+         area terisi, bukan garis di atas sesuatu) — dan itu juga accent murni #D6013B di
+         Crimson Charcoal, bukan varian yang udah digeser demi kontras teks. -->
+    <item
+        android:gravity="center_vertical"
+        android:height="4dp">
+        <inset
+            android:insetLeft="48%"
+            android:insetRight="48%">
+            <shape android:shape="rectangle">
+                <solid android:color="?attr/themeAccent" />
+            </shape>
+        </inset>
+    </item>
+</layer-list>

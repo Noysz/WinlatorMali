@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Chevron kecil, penanda arah/navigasi (Fase 4 Task 2).
+     Sudut lancip: strokeLineJoin miter + cap butt — bukan round, karena kosakata bentuk
+     di sheet referensi semuanya bersudut (OCR sheet elemen malah nangkep ">>>><<<"
+     sebagai teks).
+
+     Ini SATU-SATUNYA elemen Task 2 yang pakai warna accent: di gambar referensi merah
+     dipakai hemat (~8% area) buat satu titik fokus, sisanya abu struktural.
+
+     1 unit viewport = 1dp (12 : 12dp). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="12dp"
+    android:height="12dp"
+    android:viewportWidth="12"
+    android:viewportHeight="12">
+
+    <path
+        android:pathData="M4,2.25 L8.25,6 L4,9.75"
+        android:strokeColor="?attr/themeColorAccent"
+        android:strokeWidth="1.5"
+        android:strokeLineJoin="miter"
+        android:strokeLineCap="butt" />
+</vector>

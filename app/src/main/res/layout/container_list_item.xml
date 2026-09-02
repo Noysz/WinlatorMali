@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout android:gravity="center_vertical" android:orientation="horizontal" android:paddingLeft="16.0dip" android:paddingRight="16.0dip" android:layout_width="fill_parent" android:layout_height="wrap_content"
     xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
-    <ImageView android:id="@id/ImageView" android:layout_width="36.0dip" android:layout_height="36.0dip" android:layout_marginTop="8.0dip" android:layout_marginRight="16.0dip" android:layout_marginBottom="8.0dip" app:tint="?attr/themeColorPrimaryDark" />
+    <!-- Fase 4 Task 2: ikon container dibingkai corner mark viewfinder + chevron penanda baris.
+         Bracket ditaruh sbg background (bukan View pembungkus baru) supaya app:tint tetap cuma
+         kena src ikonnya, bukan bingkainya. Ukuran 44dp + padding 4dp = konten tetap 36dp,
+         dan marginTop/Bottom turun 8->4dp biar tinggi baris ga berubah (52dp seperti semula). -->
+    <ImageView android:id="@id/ImageView" android:layout_width="44.0dip" android:layout_height="44.0dip" android:padding="4.0dip" android:background="@drawable/ic_hud_corner_bracket" android:layout_marginTop="4.0dip" android:layout_marginRight="8.0dip" android:layout_marginBottom="4.0dip" app:tint="?attr/themeColorPrimaryDark" />
+    <ImageView android:layout_width="12.0dip" android:layout_height="12.0dip" android:layout_marginRight="6.0dip" android:src="@drawable/ic_hud_chevron" android:importantForAccessibility="no" />
     <TextView android:ellipsize="end" android:gravity="center_vertical" android:id="@id/TVTitle" android:layout_width="0.0dip" android:layout_height="fill_parent" android:maxLines="1" android:layout_weight="1.0" />
     <LinearLayout android:orientation="horizontal" android:layout_width="wrap_content" android:layout_height="wrap_content">
         <ImageView android:id="@+id/BTRun" android:layout_marginRight="2.0dip" android:src="@drawable/icon_run" style="@style/LeftSideButton" />
