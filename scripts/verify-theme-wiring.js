@@ -4,6 +4,7 @@
 //   3. Tiap ?attr/theme* yg dipake layout/drawable/menu/values PUNYA <attr> di attrs.xml (typo = crash inflate).
 //   4. Tiap attr yg dideklarasi ADA nilainya di SEMUA overlay (attr tanpa nilai = crash resolve).
 //   5. Ga ada lagi attr FOREGROUND dipake sebagai background (regresi peran).
+//   8. Tiap tag <com.winlator...> di resource XML nunjuk ke kelas yg BENERAN ada (aapt2 ga cek ini).
 //
 // Kenapa manual: box ga ada Android SDK, jadi aapt2 (yg normalnya nangkep #3) ga bisa jalan.
 // Ini bukan pengganti build — cuma nutup kelas error yg paling gampang kejadian.
@@ -274,13 +275,16 @@ const FOREGROUND_AS_SOLID_OK = {
     'toggle_button_on.xml': ['themeOnAccent']           // track = themeAccent
 };
 const allowHit = new Set();
-// Empat bentuk sintaks di grep bawah, karena attr yg sama dipake di tempat beda dgn format beda:
+// Lima bentuk sintaks di grep bawah, karena attr yg sama dipake di tempat beda dgn format beda:
 //   layout/drawable -> android:background="?attr/X"   (atribut XML)
 //   drawable shape  -> <solid android:color="?attr/X" />
+//   drawable custom -> app:cutFillColor="?attr/X"     (CutCornerDrawable, isi shape chamfer)
 //   values/styles   -> <item name="android:background">?attr/X</item>  (isi elemen)
 // Kalau cuma pattern pertama yg dicek, style di values/ lolos tanpa diperiksa.
+// cutStrokeColor SENGAJA ga ikut di-grep, sejalan dgn <stroke> yg juga ga: outline itu
+// justru tempat yg BENER buat peran foreground. Yg diawasi cuma isi/fill.
 for (const a of FOREGROUND) {
-    const raw = execSync(`grep -rn 'android:background="?attr/${a}"\\|<solid android:color="?attr/${a}"\\|name="android:background">?attr/${a}<\\|name="background">?attr/${a}<' ${RES}/layout ${RES}/drawable ${RES}/values ${RES}/values-v27 2>/dev/null || true`, { encoding: 'utf8' }).trim();
+    const raw = execSync(`grep -rn 'android:background="?attr/${a}"\\|<solid android:color="?attr/${a}"\\|app:cutFillColor="?attr/${a}"\\|name="android:background">?attr/${a}<\\|name="background">?attr/${a}<' ${RES}/layout ${RES}/drawable ${RES}/values ${RES}/values-v27 2>/dev/null || true`, { encoding: 'utf8' }).trim();
     const bad = [];
     for (const line of raw ? raw.split('\n') : []) {
         const file = path.basename(line.split(':')[0]);
@@ -292,7 +296,7 @@ for (const a of FOREGROUND) {
 for (const [file, attrs] of Object.entries(FOREGROUND_AS_SOLID_OK)) {
     for (const a of attrs) {
         check(allowHit.has(`${file}|${a}`),
-            `allowlist assert-5 BASI: ${file} ga pakai ?attr/${a} sbg <solid> lagi — hapus entrinya`);
+            `allowlist assert-5 BASI: ${file} ga pakai ?attr/${a} sbg isi shape lagi — hapus entrinya`);
     }
 }
 
@@ -325,6 +329,43 @@ check(/applyTheme\(Context context\)\s*\{\s*migrateLegacyPreference\(context\);/
 const badDefaults = execSync(`grep -rn 'getBoolean("dark_mode", *false)' ${JAVA} 2>/dev/null || true`, { encoding: 'utf8' }).trim();
 check(badDefaults === '', `ada pembacaan dark_mode dgn default false (harus true):\n      ${badDefaults.replace(/\n/g, '\n      ')}`);
 console.log(`     ${readers.length} file masih BACA dark_mode (default true) — dibereskan migrasi, bukan diedit`);
+
+// ---------- 8. tag kelas custom di resource XML ----------
+console.log('\n=== 8. tag kelas custom di resource XML ===');
+// aapt2 GA validasi nama tag drawable. `<com.winlator.cmod.widget.CutCornrDrawable>` lolos
+// compile dan baru throw ClassNotFoundException waktu inflate — di SEMUA layar yg makai
+// drawable itu sekaligus. Build hijau ga membuktikan apa-apa soal ini, jadi dicek di sini:
+// satu-satunya cara nangkep typo/rename tanpa device.
+const customTags = new Map(); // FQN -> Set(nama file)
+for (const f of xmlFiles) {
+    const src = fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+    for (const m of src.matchAll(/<(com\.winlator\.[A-Za-z0-9_.]+)[\s/>]/g)) {
+        if (!customTags.has(m[1])) customTags.set(m[1], new Set());
+        customTags.get(m[1]).add(path.relative(RES, f));
+    }
+}
+const pgSrc = fs.readFileSync(path.join(REPO, 'app/proguard-rules.pro'), 'utf8');
+for (const [fqn, users] of [...customTags].sort()) {
+    const rel = fqn.replace(/^com\.winlator\.cmod\./, '').replace(/\./g, '/') + '.java';
+    const srcPath = path.join(JAVA, rel);
+    const exists = fqn.startsWith('com.winlator.cmod.') && fs.existsSync(srcPath);
+    check(exists, `tag <${fqn}> dipakai di ${[...users].join(', ')} tapi ${rel} ga ada -> ClassNotFoundException waktu inflate`);
+    if (!exists) continue;
+
+    // Cek tambahan HANYA buat kelas yg dipake sebagai drawable: jalur inflate-nya beda dari
+    // View (DrawableInflater.inflateFromClass butuh constructor kosong, bukan (Context, AttributeSet)).
+    const asDrawable = [...users].some((u) => u.startsWith('drawable'));
+    if (!asDrawable) continue;
+    const cls = fqn.split('.').pop();
+    const src = fs.readFileSync(srcPath, 'utf8');
+    check(new RegExp(`public\\s+${cls}\\s*\\(\\s*\\)`).test(src),
+        `${cls} dipakai sbg tag drawable tapi ga punya constructor public tanpa argumen -> inflateFromClass gagal`);
+    check(/@Override\s+public void inflate\(/.test(src),
+        `${cls} dipakai sbg tag drawable tapi ga override inflate() -> attribut app: di XML diabaikan diam-diam`);
+    check(pgSrc.includes(fqn),
+        `${cls} cuma direferensi dari XML (refleksi) tapi ga ada -keep buat ${fqn} di proguard-rules.pro`);
+}
+console.log(`     ${customTags.size} tag kelas custom: ${[...customTags.keys()].map((f) => f.split('.').pop()).join(', ')}`);
 
 console.log(`\n${fail === 0 ? 'PASS' : 'FAIL'} — ${pass} assert lolos, ${fail} gagal`);
 process.exit(fail === 0 ? 0 : 1);

@@ -24,6 +24,24 @@
         <attr name="themeColorAccent" format="color" />
     </declare-styleable>
 
+    <!-- CutCornerDrawable: chamfered rectangle, dipakai sbg tag di drawable resource
+         (<com.winlator.cmod.widget.CutCornerDrawable app:cutFillColor="?attr/themeSurface" ...>).
+         Nama attr di-prefix `cut` biar ga tabrakan sama attr styleable lain di file ini.
+         cutFillColor/cutStrokeColor sengaja PISAH dari android:color: DrawableInflater
+         cuma manggil inflate() dgn AttributeSet mentah, jadi attr platform ga ke-resolve
+         otomatis buat class custom. -->
+    <declare-styleable name="CutCornerDrawable">
+        <attr name="cutFillColor" format="color" />
+        <attr name="cutStrokeColor" format="color" />
+        <attr name="cutStrokeWidth" format="dimension" />
+        <!-- cutSize = keempat sudut sekaligus; per-sudut nimpa cutSize kalau di-set. -->
+        <attr name="cutSize" format="dimension" />
+        <attr name="cutSizeTopLeft" format="dimension" />
+        <attr name="cutSizeTopRight" format="dimension" />
+        <attr name="cutSizeBottomRight" format="dimension" />
+        <attr name="cutSizeBottomLeft" format="dimension" />
+    </declare-styleable>
+
     <!--
       Theme-preset color roles. Set by the generated overlays in theme_overlays.xml, one
       per preset, applied at runtime via ThemeManager.applyTheme(). Values are computed by

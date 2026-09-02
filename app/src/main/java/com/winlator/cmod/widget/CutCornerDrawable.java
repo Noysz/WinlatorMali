@@ -1,5 +1,7 @@
 package com.winlator.cmod.widget;
 
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
@@ -8,9 +10,18 @@ import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.util.AttributeSet;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.winlator.cmod.R;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
 
 /**
  * Rectangle whose corners are chamfered — cut off along a 45° diagonal — instead of rounded.
@@ -24,10 +35,25 @@ import androidx.annotation.Nullable;
  * none of which this UI uses, and it needs a {@code Theme.MaterialComponents} descendant while the
  * app themes descend from AppCompat.
  *
- * <p>Colors are fixed at construction. Callers build one per use rather than mutating a shared
- * instance, which is also why there are no color setters — {@link #setAlpha(int)} and
- * {@link #setColorFilter(ColorFilter)} exist only because {@link Drawable} requires them.
+ * <h3>Use from a drawable resource</h3>
+ * The class name is the tag, and the attributes need the {@code res-auto} namespace:
+ * <pre>{@code
+ * <com.winlator.cmod.widget.CutCornerDrawable
+ *     xmlns:app="http://schemas.android.com/apk/res-auto"
+ *     app:cutFillColor="?attr/themeSurface"
+ *     app:cutSize="@dimen/cut_corner_small" />
+ * }</pre>
+ * {@link android.graphics.drawable.DrawableInflater} reaches this through {@code inflateFromClass},
+ * which needs the {@linkplain #CutCornerDrawable() public no-arg constructor} below and loads the
+ * class reflectively — hence {@link Keep}, since nothing in compiled code references it. Note that
+ * aapt2 does not validate drawable tag names, so a typo in the tag survives the build and only
+ * throws when the drawable is first inflated.
+ *
+ * <p>Colors are fixed once set. Callers that build one in Java make a fresh instance per use rather
+ * than mutating a shared one, which is also why there are no color setters — {@link #setAlpha(int)}
+ * and {@link #setColorFilter(ColorFilter)} exist only because {@link Drawable} requires them.
  */
+@Keep
 public class CutCornerDrawable extends Drawable {
     // ANTI_ALIAS_FLAG is not optional: the diagonals are the whole point of this shape, and without
     // it they render as visible staircases at the sizes this is used at.
@@ -35,13 +61,26 @@ public class CutCornerDrawable extends Drawable {
     private final Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
 
-    private final int fillColor;
-    private final int strokeColor;
-    private final float strokeWidthPx;
-    private final float cutPx;
+    private int fillColor = Color.TRANSPARENT;
+    private int strokeColor = Color.TRANSPARENT;
+    private float strokeWidthPx;
+    private float cutTopLeftPx;
+    private float cutTopRightPx;
+    private float cutBottomRightPx;
+    private float cutBottomLeftPx;
 
     private int alpha = 0xFF;
     private boolean pathDirty = true;
+
+    /**
+     * Required by {@code DrawableInflater} for {@code <com.winlator.cmod.widget.CutCornerDrawable>}
+     * tags; leaves everything transparent until {@link #inflate} fills it in. Java callers want one
+     * of the other two constructors.
+     */
+    public CutCornerDrawable() {
+        fillPaint.setStyle(Paint.Style.FILL);
+        strokePaint.setStyle(Paint.Style.STROKE);
+    }
 
     public CutCornerDrawable(int fillColor, float cutPx) {
         this(fillColor, cutPx, 0f, Color.TRANSPARENT);
@@ -53,15 +92,48 @@ public class CutCornerDrawable extends Drawable {
      * @param strokeWidthPx {@code <= 0} for no outline
      */
     public CutCornerDrawable(int fillColor, float cutPx, float strokeWidthPx, int strokeColor) {
+        this();
         this.fillColor = fillColor;
-        this.cutPx = cutPx;
-        this.strokeWidthPx = strokeWidthPx;
         this.strokeColor = strokeColor;
+        this.strokeWidthPx = strokeWidthPx;
+        this.cutTopLeftPx = cutPx;
+        this.cutTopRightPx = cutPx;
+        this.cutBottomRightPx = cutPx;
+        this.cutBottomLeftPx = cutPx;
 
-        fillPaint.setStyle(Paint.Style.FILL);
-        strokePaint.setStyle(Paint.Style.STROKE);
         strokePaint.setStrokeWidth(Math.max(0f, strokeWidthPx));
         syncPaints();
+    }
+
+    @Override
+    public void inflate(@NonNull Resources r, @NonNull XmlPullParser parser,
+                        @NonNull AttributeSet attrs, @Nullable Resources.Theme theme)
+            throws XmlPullParserException, IOException {
+        // Handles android:visible, which is declared on Drawable itself and not in our styleable.
+        super.inflate(r, parser, attrs, theme);
+
+        // Going through the theme is what makes `?attr/themeSurface` resolvable here; the plain
+        // Resources path (no theme) would hand back the unresolved attribute reference instead.
+        final TypedArray a = theme != null
+                ? theme.obtainStyledAttributes(attrs, R.styleable.CutCornerDrawable, 0, 0)
+                : r.obtainAttributes(attrs, R.styleable.CutCornerDrawable);
+        try {
+            fillColor = a.getColor(R.styleable.CutCornerDrawable_cutFillColor, Color.TRANSPARENT);
+            strokeColor = a.getColor(R.styleable.CutCornerDrawable_cutStrokeColor, Color.TRANSPARENT);
+            strokeWidthPx = a.getDimension(R.styleable.CutCornerDrawable_cutStrokeWidth, 0f);
+
+            final float all = a.getDimension(R.styleable.CutCornerDrawable_cutSize, 0f);
+            cutTopLeftPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeTopLeft, all);
+            cutTopRightPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeTopRight, all);
+            cutBottomRightPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeBottomRight, all);
+            cutBottomLeftPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeBottomLeft, all);
+        } finally {
+            a.recycle();
+        }
+
+        strokePaint.setStrokeWidth(Math.max(0f, strokeWidthPx));
+        syncPaints();
+        pathDirty = true;
     }
 
     @Override
@@ -83,22 +155,49 @@ public class CutCornerDrawable extends Drawable {
         final float right = b.right - inset;
         final float bottom = b.bottom - inset;
 
-        // A cut longer than half the shorter side makes the two chamfers on that side cross, and
-        // the path renders as a bow tie. Clamp rather than let it self-intersect.
-        final float cut = Math.max(0f, Math.min(cutPx, Math.min(right - left, bottom - top) / 2f));
-
         path.reset();
-        path.moveTo(left + cut, top);
-        path.lineTo(right - cut, top);
-        path.lineTo(right, top + cut);
-        path.lineTo(right, bottom - cut);
-        path.lineTo(right - cut, bottom);
-        path.lineTo(left + cut, bottom);
-        path.lineTo(left, bottom - cut);
-        path.lineTo(left, top + cut);
-        path.close();
-
         pathDirty = false;
+
+        final float w = right - left;
+        final float h = bottom - top;
+        // A stroke wider than the bounds inverts them; nothing sensible to draw.
+        if (w <= 0 || h <= 0) return;
+
+        final float tl0 = Math.max(0f, cutTopLeftPx);
+        final float tr0 = Math.max(0f, cutTopRightPx);
+        final float br0 = Math.max(0f, cutBottomRightPx);
+        final float bl0 = Math.max(0f, cutBottomLeftPx);
+
+        // Two chamfers sharing a side cannot be longer together than that side, or the path crosses
+        // itself and renders as a bow tie. Shrink all four proportionally by the worst offender —
+        // the same treatment RoundRectShape gives oversized radii. Clamping each corner to
+        // min(w,h)/2 in isolation would be simpler but also rejects legal shapes: the 4dp-tall
+        // button bevel band needs a 4dp bottom cut, which fits only because its top cuts are 0.
+        float scale = 1f;
+        scale = shrink(scale, w, tl0 + tr0);
+        scale = shrink(scale, h, tr0 + br0);
+        scale = shrink(scale, w, br0 + bl0);
+        scale = shrink(scale, h, bl0 + tl0);
+
+        final float tl = tl0 * scale;
+        final float tr = tr0 * scale;
+        final float br = br0 * scale;
+        final float bl = bl0 * scale;
+
+        path.moveTo(left + tl, top);
+        path.lineTo(right - tr, top);
+        path.lineTo(right, top + tr);
+        path.lineTo(right, bottom - br);
+        path.lineTo(right - br, bottom);
+        path.lineTo(left + bl, bottom);
+        path.lineTo(left, bottom - bl);
+        path.lineTo(left, top + tl);
+        path.close();
+    }
+
+    /** Reduces {@code scale} so that {@code sum} scaled by it still fits inside {@code side}. */
+    private static float shrink(float scale, float side, float sum) {
+        return sum > side ? Math.min(scale, side / sum) : scale;
     }
 
     @Override
@@ -141,6 +240,11 @@ public class CutCornerDrawable extends Drawable {
     public int getOpacity() {
         return PixelFormat.TRANSLUCENT;
     }
+
+    // getConstantState() is deliberately left returning null: ResourcesImpl only caches a drawable
+    // that reports one, so every inflation re-reads the ?attr/ colors against the theme in effect
+    // right now. Costs a re-parse per inflation, buys immunity to a cached drawable outliving a
+    // preset switch.
 
     private void syncPaints() {
         fillPaint.setColor(modulateAlpha(fillColor, alpha));

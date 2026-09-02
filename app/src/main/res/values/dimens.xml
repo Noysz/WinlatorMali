@@ -2,4 +2,20 @@
 <resources>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="activity_horizontal_margin">4dip</dimen>
+
+    <!-- Chamfer sudut (CutCornerDrawable). Semua drawable nunjuk ke sini biar retune
+         bentuknya satu baris, bukan 18 file. -->
+    <dimen name="cut_corner_small">6dp</dimen>
+    <dimen name="cut_corner_large">12dp</dimen>
+    <dimen name="cut_corner_toggle_track">8dp</dimen>
+    <dimen name="cut_corner_toggle_knob">6dp</dimen>
+
+    <!-- Strip bevel bawah tombol. Dua angka ini TERIKAT ke cut_corner_small:
+         silhouette tombol di ketinggian (h - bevel_height) mulai dari x = small - height,
+         jadi strip full-width bakal nongol keluar chamfer kalau ga di-inset segitu.
+              bevel_inset = cut_corner_small - bevel_height
+         dan chamfer strip-nya sendiri = bevel_height (cuma 2 sudut bawah).
+         Ubah cut_corner_small -> bevel_inset HARUS diubah juga. -->
+    <dimen name="button_bevel_height">4dp</dimen>
+    <dimen name="button_bevel_inset">2dp</dimen>
 </resources>

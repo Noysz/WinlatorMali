@@ -17,3 +17,9 @@
 #}
 
 #-dontobfuscate
+# CutCornerDrawable dipanggil CUMA dari nama tag di drawable XML, lewat refleksi
+# (DrawableInflater.inflateFromClass) -> shrinker liatnya unused dan bakal buang kelas
+# + no-arg constructor-nya. minifyEnabled masih false di kedua build type, jadi ini
+# belum aktif; ditaruh sekarang supaya nyalain minify nanti ga bikin tiap dialog,
+# tombol, field dan combo crash sekaligus.
+-keep class com.winlator.cmod.widget.CutCornerDrawable { <init>(...); }
