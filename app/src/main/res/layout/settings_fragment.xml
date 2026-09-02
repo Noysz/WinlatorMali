@@ -229,24 +229,20 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <LinearLayout style="@style/FieldSet">
-                    <LinearLayout
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/theme_preset" />
+                    <!-- nestedScrollingEnabled=false: grid ini ada DI DALAM ScrollView
+                         settings, jadi scroll-nya harus diserahkan ke parent. Tanpa itu
+                         RecyclerView nelen gesture dan halaman settings macet di area grid.
+                         wrap_content aman karena RV dukung itu (beda dari GridView). -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/RVThemePreset"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="12dp"
-                            android:text="@string/theme_preset" />
-                        <Spinner
-                            android:id="@+id/SThemePreset"
-                            style="@style/ComboBox"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:spinnerMode="dialog" />
-                    </LinearLayout>
+                        android:layout_marginTop="8dp"
+                        android:nestedScrollingEnabled="false" />
                 </LinearLayout>
                 <TextView
                     android:id="@+id/TVTheme"

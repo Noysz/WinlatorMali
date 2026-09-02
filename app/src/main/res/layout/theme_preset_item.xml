@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Satu sel grid picker preset (4 kolom).
+
+     Warna TIDAK di-set di sini. Tiap sel nampilin preset yg beda, sementara `?attr/`
+     cuma bisa ngasih warna preset yg SEDANG aktif — jadi swatch, bar accent, teks, dan
+     tint centang semuanya dipasang ThemePresetAdapter dari ThemeManager.PRESETS.get(i).
+     Itu juga alasan bentuk rounded-nya dibikin GradientDrawable di Java, bukan <shape>:
+     shape XML warnanya statis, dan setBackgroundColor bakal nimpa drawable-nya. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="4dp">
+
+    <LinearLayout
+        android:id="@+id/LLPresetSwatch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="6dp">
+
+        <View
+            android:id="@+id/VPresetAccent"
+            android:layout_width="match_parent"
+            android:layout_height="20dp" />
+
+        <TextView
+            android:id="@+id/TVPresetName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:gravity="center_horizontal"
+            android:maxLines="2"
+            android:textSize="10sp" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/IVPresetCheck"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="7dp"
+        android:contentDescription="@string/theme_preset_selected"
+        android:src="@drawable/ic_check"
+        android:visibility="gone" />
+</FrameLayout>

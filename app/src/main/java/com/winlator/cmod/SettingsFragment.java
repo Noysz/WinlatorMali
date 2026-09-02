@@ -10,8 +10,6 @@ import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -27,6 +25,8 @@ import androidx.collection.ArrayMap;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.navigation.NavigationView;
 import com.winlator.cmod.box64.Box64EditPresetDialog;
@@ -71,8 +71,6 @@ public class SettingsFragment extends Fragment {
     private CheckBox cbEnableCustomApiKey;
     private EditText etCustomApiKey;
 
-    private Spinner sThemePreset;
-
     private static final int REQUEST_CODE_WINLATOR_PATH = 1002;
     private static final int REQUEST_CODE_SHORTCUT_EXPORT_PATH = 1003;
     private static final int REQUEST_CODE_INSTALL_SOUNDFONT = 1001;
@@ -105,7 +103,7 @@ public class SettingsFragment extends Fragment {
         // Apply dynamic styles
         applyDynamicStyles(view);
 
-        initThemePresetSpinner(view);
+        initThemePresetGrid(view);
 
         initCustomApiKeySettings(view);
 
@@ -309,39 +307,29 @@ public class SettingsFragment extends Fragment {
     }
 
     /**
-     * Theme preset picker. Selecting an entry persists the index and restarts the activity, because
-     * the preset drives {@code ?attr/} values that are only read while views inflate — see
+     * Theme preset picker: a 4-column grid where each cell previews one preset and the active one
+     * carries a checkmark. Picking one persists the index and restarts the activity, because the
+     * preset drives {@code ?attr/} values that are only read while views inflate — see
      * ThemeManager.applyTheme.
      *
-     * <p>The listener ignores the initial callback that setSelection triggers, so merely opening
-     * Settings does not restart the activity.
+     * <p>Replaces a Spinner. A spinner showed only the name of the collapsed entry, so choosing
+     * between eighteen palettes meant opening the dropdown and reading a text list — the one thing
+     * a color picker should not make you do. Colors for the cells come from ThemeManager.PRESETS
+     * rather than {@code ?attr/}; see ThemePresetAdapter for why that is unavoidable here.
      */
-    private void initThemePresetSpinner(View view) {
+    private void initThemePresetGrid(View view) {
         final Context context = getContext();
-        sThemePreset = view.findViewById(R.id.SThemePreset);
-
-        String[] names = new String[ThemeManager.PRESETS.size()];
-        for (int i = 0; i < names.length; i++) names[i] = ThemeManager.PRESETS.get(i).name;
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, names);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        sThemePreset.setAdapter(adapter);
-
-        final int current = ThemeManager.getSelectedPresetIndex(context);
-        sThemePreset.setSelection(current, false);
-        sThemePreset.setPopupBackgroundResource(R.drawable.content_dialog_background_dark);
-
-        sThemePreset.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View v, int position, long id) {
-                if (position == ThemeManager.getSelectedPresetIndex(context)) return;
-                ThemeManager.setSelectedPresetIndex(context, position);
-                requireActivity().recreate();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
+        RecyclerView recyclerView = view.findViewById(R.id.RVThemePreset);
+        recyclerView.setLayoutManager(new GridLayoutManager(context, THEME_GRID_COLUMNS));
+        // Tinggi grid ga berubah setelah data pertama di-set (jumlah preset konstan), jadi RV
+        // boleh ngukur sekali aja — ini yg bikin wrap_content di dalam ScrollView murah.
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(new ThemePresetAdapter(
+                ThemeManager.getSelectedPresetIndex(context),
+                (index) -> {
+                    ThemeManager.setSelectedPresetIndex(context, index);
+                    requireActivity().recreate();
+                }));
     }
 
     private void applyDynamicStyles(View view) {
@@ -352,6 +340,8 @@ public class SettingsFragment extends Fragment {
         Spinner sFEXCorePreset = view.findViewById(R.id.SFEXCorePreset);
         sFEXCorePreset.setPopupBackgroundResource(R.drawable.content_dialog_background_dark);
     }
+
+    private static final int THEME_GRID_COLUMNS = 4;
 
     private static final int[] FIELD_SET_LABEL_IDS = {
         R.id.TVBox64, R.id.TVFEXCore, R.id.TVSound, R.id.TVTheme, R.id.TVShortcutSettings,
