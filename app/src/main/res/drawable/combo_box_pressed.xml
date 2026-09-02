@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Port dari drawable-hdpi/combo_box_pressed.9.png (dihapus). Ukur PNG asli:
+     interior TRANSPARAN (bukan kotak isi) — cuma outline 2px = 1.3dp,
+     inset 5px = 3.3dp, radius 5px = 3.3dp.
+     Ada garis vertikal 2px yg misahin area teks dari kotak panah. 9-patch
+     stretch-x cuma di kiri garis itu, jadi garis+panah ke-pin ke kanan:
+     lebar kotak panah tetap 50px@hdpi = 33.3dp berapa pun lebar spinner. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
+    <layer-list>
+        <item>
+            <shape android:shape="rectangle">
+                <corners android:radius="3.3dp" />
+                <stroke android:width="1.3dp" android:color="?attr/themeOnSurface" />
+            </shape>
+        </item>
+        <item android:gravity="right|fill_vertical" android:width="1.3dp" android:right="33.3dp">
+            <shape android:shape="rectangle">
+                <solid android:color="?attr/themeOnSurface" />
+            </shape>
+        </item>
+        <item
+            android:drawable="@drawable/combo_box_arrow"
+            android:gravity="right|center_vertical"
+            android:width="12dp"
+            android:height="12dp"
+            android:right="10.7dp" />
+    </layer-list>
+</inset>

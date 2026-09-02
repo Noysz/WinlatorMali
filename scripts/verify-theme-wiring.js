@@ -1,8 +1,8 @@
 // Cek konsistensi Fase 3 yg TIDAK bisa ditangkep compiler:
 //   1. Nilai di theme_overlays.xml (generated) == hasil hitung ThemePreset (algoritma).
 //   2. Urutan style di ThemeManager.PRESET_STYLES == urutan <style> di XML == urutan PRESETS.
-//   3. Tiap ?attr/theme* yg dipake layout/drawable PUNYA <attr> di attrs.xml (typo = crash inflate).
-//   4. Tiap attr yg dideklarasi ADA nilainya di 14 overlay (attr tanpa nilai = crash resolve).
+//   3. Tiap ?attr/theme* yg dipake layout/drawable/menu/values PUNYA <attr> di attrs.xml (typo = crash inflate).
+//   4. Tiap attr yg dideklarasi ADA nilainya di SEMUA overlay (attr tanpa nilai = crash resolve).
 //   5. Ga ada lagi attr FOREGROUND dipake sebagai background (regresi peran).
 //
 // Kenapa manual: box ga ada Android SDK, jadi aapt2 (yg normalnya nangkep #3) ga bisa jalan.
@@ -62,7 +62,12 @@ const RAW = [
     ['Emerald Depth', 0xFF051F20, 0xFF0B2B26, 0xFF163832, 0xFF8EB69B],
     ['Berry Pink', 0xFF450714, 0xFF851636, lerp(0xFF851636, 0xFFCF325F, 0.30), 0xFFCF325F],
     ['Ocean Ice', 0xFF021024, 0xFF052659, lerp(0xFF052659, 0xFF5483B3, 0.30), 0xFF5483B3],
-    ['Peach Maroon', 0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D]
+    ['Peach Maroon', 0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D],
+    // --- Batch 2 (index 14-17) ---
+    ['Solar Slate', 0xFF192230, 0xFF2C2F38, 0xFF3F4952, 0xFFFFD001],
+    ['Crimson Charcoal', 0xFF1E1E28, 0xFF272228, lerp(0xFF272228, 0xFFD6013B, 0.30), 0xFFD6013B],
+    ['Urban Ember', 0xFF3A3F43, 0xFF666C7B, lerp(0xFF666C7B, 0xFFDC5F00, 0.30), 0xFFDC5F00],
+    ['Midnight Amber', 0xFF262236, 0xFF3D4F7E, lerp(0xFF3D4F7E, 0xFFE18546, 0.30), 0xFFE18546]
 ];
 const build = (p) => {
     const [name, bg, su, sv, pri] = p;
@@ -204,7 +209,25 @@ presetNames.forEach((n, i) => check(n === expected[i].name, `PRESETS[${i}] = "${
 console.log('\n=== 3. ?attr/ dipakai vs dideklarasi ===');
 const attrsXml = fs.readFileSync(path.join(RES, 'values/attrs.xml'), 'utf8');
 const declared = new Set([...attrsXml.matchAll(/<attr\s+name="([^"]+)"/g)].map((m) => m[1]));
-const usedRaw = execSync(`grep -rhoE '\\?attr/[A-Za-z_][A-Za-z0-9_]*' ${RES}/layout ${RES}/drawable ${RES}/menu 2>/dev/null || true`, { encoding: 'utf8' });
+// Komentar XML DIBUANG sebelum dicocokkan. Tanpa ini, teks dokumentasi ikut kebaca: header
+// theme_overlays.xml nyebut "?attr/theme*" sebagai penjelasan, dan itu kebaca jadi attr
+// bernama `theme` yang ga pernah ada -> 15 FAIL palsu. Komentar bukan kode.
+const scanDirs = ['layout', 'drawable', 'menu', 'values', 'values-v27'];
+const xmlFiles = [];
+const walk = (d) => {
+    if (!fs.existsSync(d)) return;
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+        const p = path.join(d, e.name);
+        if (e.isDirectory()) walk(p);
+        else if (e.name.endsWith('.xml')) xmlFiles.push(p);
+    }
+};
+for (const d of scanDirs) walk(path.join(RES, d));
+const usedRaw = xmlFiles
+    .map((f) => fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, ''))
+    .join('\n')
+    .match(/\?attr\/[A-Za-z_][A-Za-z0-9_]*/g)
+    ?.join('\n') || '';
 const used = new Map();
 for (const line of usedRaw.split('\n')) {
     const a = line.trim().replace('?attr/', '');
@@ -219,7 +242,7 @@ for (const [a, n] of [...used].sort()) {
 }
 console.log(`     ${used.size} attr unik dipakai, ${declared.size} dideklarasi`);
 
-// ---------- 4. tiap attr theme* yg dipake HARUS punya nilai di 14 overlay ----------
+// ---------- 4. tiap attr theme* yg dipake HARUS punya nilai di SEMUA overlay ----------
 console.log('\n=== 4. attr punya nilai di semua overlay ===');
 const themeAttrsUsed = [...used.keys()].filter((a) => a.startsWith('theme'));
 styleBlocks.forEach((blk, i) => {
@@ -233,9 +256,44 @@ console.log(`     ${themeAttrsUsed.length} attr theme* dipakai layout: ${themeAt
 // ---------- 5. attr foreground TIDAK boleh jadi background ----------
 console.log('\n=== 5. regresi peran (foreground dipakai sbg background) ===');
 const FOREGROUND = ['themeColorPrimary', 'themeColorPrimaryDark', 'themeColorAccent', 'themeOnSurface', 'themeOnSurfaceVariant', 'themeOnBackground', 'themeOnAccent'];
+// PENGECUALIAN SEMPIT (file, attr). Peran foreground dipakai sebagai <solid> itu normalnya
+// regresi — tapi ada bentuk sah: shape KECIL yg digambar DI ATAS peran background
+// pasangannya, mis. garis pemisah atau knob toggle. Di situ onX/X justru pasangan yg
+// kontrasnya dijamin ThemePreset.ensureReadable, jadi ngelarangnya malah bikin salah.
+// Yang tetep dilarang: <solid> foreground buat area BESAR (panel, dialog, header).
+// Daftar ini di-cek anti-basi di bawah: entri yg ga kepake lagi = FAIL, biar ga numpuk
+// jadi lubang permanen.
+const FOREGROUND_AS_SOLID_OK = {
+    // garis pemisah 1.3dp antara area teks dan kotak panah spinner (stroke, bukan isi)
+    'combo_box_normal.xml': ['themeOnSurfaceVariant'],
+    'combo_box_normal_dark.xml': ['themeOnSurfaceVariant'],
+    'combo_box_pressed.xml': ['themeOnSurface'],
+    'combo_box_pressed_dark.xml': ['themeOnSurface'],
+    // knob 24dp toggle, duduk di atas track yg warnanya peran background pasangannya
+    'toggle_button_off.xml': ['themeOnSurfaceVariant'], // track = themeSurfaceVariant
+    'toggle_button_on.xml': ['themeOnAccent']           // track = themeAccent
+};
+const allowHit = new Set();
+// Empat bentuk sintaks di grep bawah, karena attr yg sama dipake di tempat beda dgn format beda:
+//   layout/drawable -> android:background="?attr/X"   (atribut XML)
+//   drawable shape  -> <solid android:color="?attr/X" />
+//   values/styles   -> <item name="android:background">?attr/X</item>  (isi elemen)
+// Kalau cuma pattern pertama yg dicek, style di values/ lolos tanpa diperiksa.
 for (const a of FOREGROUND) {
-    const hits = execSync(`grep -rn 'android:background="?attr/${a}"\\|<solid android:color="?attr/${a}"' ${RES}/layout ${RES}/drawable 2>/dev/null || true`, { encoding: 'utf8' }).trim();
-    check(hits === '', `${a} dipakai sbg background:\n      ${hits.replace(/\n/g, '\n      ')}`);
+    const raw = execSync(`grep -rn 'android:background="?attr/${a}"\\|<solid android:color="?attr/${a}"\\|name="android:background">?attr/${a}<\\|name="background">?attr/${a}<' ${RES}/layout ${RES}/drawable ${RES}/values ${RES}/values-v27 2>/dev/null || true`, { encoding: 'utf8' }).trim();
+    const bad = [];
+    for (const line of raw ? raw.split('\n') : []) {
+        const file = path.basename(line.split(':')[0]);
+        if ((FOREGROUND_AS_SOLID_OK[file] || []).includes(a)) { allowHit.add(`${file}|${a}`); continue; }
+        bad.push(line);
+    }
+    check(bad.length === 0, `${a} dipakai sbg background:\n      ${bad.join('\n      ')}`);
+}
+for (const [file, attrs] of Object.entries(FOREGROUND_AS_SOLID_OK)) {
+    for (const a of attrs) {
+        check(allowHit.has(`${file}|${a}`),
+            `allowlist assert-5 BASI: ${file} ga pakai ?attr/${a} sbg <solid> lagi — hapus entrinya`);
+    }
 }
 
 // ---------- 6. applyTheme dipanggil di semua Activity ----------

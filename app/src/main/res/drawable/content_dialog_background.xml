@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Port dari drawable-hdpi/content_dialog_background.9.png (dihapus).
+     Warna dulu ke-bake di pixel jadi ga bisa ikut preset; sekarang lewat ?attr/.
+     Geometri hasil ukur PNG asli: inset 15px@hdpi = 10dp, radius 5px = 3.3dp.
+     inset 10dp = margin panel dari tepi window (dialog-nya windowFullscreen).
+     InsetDrawable.getPadding() nambahin inset ke padding anak, jadi padding
+     konten 10dp dari 9-patch lama ke-reproduksi tanpa <padding> manual. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="10dp">
+    <shape android:shape="rectangle">
+        <solid android:color="?attr/themeSurface" />
+        <corners android:radius="3.3dp" />
+    </shape>
+</inset>

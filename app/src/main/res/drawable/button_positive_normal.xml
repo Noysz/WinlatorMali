@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Port dari drawable-hdpi/button_positive_normal.9.png (dihapus). Ukur PNG asli:
+     inset 5px@hdpi = 3.3dp, radius 5px = 3.3dp, strip bawah 6px = 4dp
+     dengan warna = fill x 0.84 (bevel "tombol timbul").
+     x0.84 ga punya peran tema sendiri, jadi dipakai overlay hitam 16% (#29000000):
+     hasilnya proporsional buat SEMUA 18 preset, bukan hex mati satu warna. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
+    <layer-list>
+        <item>
+            <shape android:shape="rectangle">
+                <solid android:color="?attr/themeAccent" />
+                <corners android:radius="3.3dp" />
+            </shape>
+        </item>
+        <item android:gravity="bottom|fill_horizontal" android:height="4dp">
+            <shape android:shape="rectangle">
+                <solid android:color="#29000000" />
+                <corners android:bottomLeftRadius="3.3dp" android:bottomRightRadius="3.3dp" />
+            </shape>
+        </item>
+    </layer-list>
+</inset>

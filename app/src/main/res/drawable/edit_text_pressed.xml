@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Port dari drawable-hdpi/edit_text_pressed.9.png (dihapus). Ukur PNG asli:
+     inset 5px@hdpi = 3.3dp, radius 5px = 3.3dp, stroke 2px = 1.3dp.
+     Isi field pakai themeBackground (peran paling gelap) — di PNG lama variant
+     dark isinya #000000 di atas dialog #424242, jadi kesannya "cekung". -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
+    <shape android:shape="rectangle">
+        <solid android:color="?attr/themeBackground" />
+        <stroke android:width="1.3dp" android:color="?attr/themeOnSurface" />
+        <corners android:radius="3.3dp" />
+    </shape>
+</inset>

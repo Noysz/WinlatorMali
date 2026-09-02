@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Panah spinner. File baru: ic_arrow_drop_down.xml yg udah ada pakai
+     ?android:attr/textColorSecondary, dan attr itu TIDAK di-set overlay preset,
+     jadi warnanya nempel default platform. pathData disalin sama persis. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="12dp"
+    android:height="12dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="?attr/themeOnSurfaceVariant"
+        android:pathData="M7,10l5,5 5,-5H7z" />
+</vector>

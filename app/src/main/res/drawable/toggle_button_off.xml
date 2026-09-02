@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Port dari drawable-hdpi/toggle_button_off.png (dihapus). State off.
+     ToggleButton-nya fix 64x32dp di 5 layout, jadi geometri dihitung dari situ
+     (bukan dari px asset): pill radius 16dp, knob 24dp, offset 4dp dari tepi.
+
+     BEDA SENGAJA dari PNG lama: pasangan warna dipilih yg kontrasnya DIJAMIN
+     ThemePreset.ensureReadable (track = peran background, knob = peran "on"-nya
+     = >=4.5:1). PNG lama malah knob (#EEEEEE) lebih terang dari track (#BDBDBD)
+     buat state off — kontras ~1.2:1, nyaris ga keliatan. Posisi knob (kiri/kanan)
+     tetep jadi penanda utama state, sama kaya aslinya. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="?attr/themeSurfaceVariant" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    <item
+        android:gravity="left|center_vertical"
+        android:left="4dp"
+        android:width="24dp"
+        android:height="24dp">
+        <shape android:shape="oval">
+            <solid android:color="?attr/themeOnSurfaceVariant" />
+        </shape>
+    </item>
+</layer-list>

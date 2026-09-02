@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Port dari drawable-hdpi/edit_text_normal.9.png (dihapus). Ukur PNG asli:
+     inset 5px@hdpi = 3.3dp, radius 5px = 3.3dp, stroke 2px = 1.3dp.
+     Isi field pakai themeBackground (peran paling gelap). PNG varian TERANG ini
+     dulu isinya #FFFFFF; setelah Fase 3 semua preset gelap, jadi putih mati bakal
+     nyilaukan dan ga ikut preset.
+
+     DI-DROP: PNG asli punya garis dalam 2px #E8E8E8 di sisi atas (bekas shadow
+     "cekung" ala Material 2015). <shape> ga bisa naruh inner shadow, dan bikin
+     tiruannya pakai layer tambahan cuma nambah 1 layer buat efek yg ga keliatan
+     di background gelap. Sengaja dibuang, bukan kelupaan. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
+    <shape android:shape="rectangle">
+        <solid android:color="?attr/themeBackground" />
+        <stroke android:width="1.3dp" android:color="?attr/themeOnSurfaceVariant" />
+        <corners android:radius="3.3dp" />
+    </shape>
+</inset>
