@@ -3,28 +3,40 @@
      inset 5px@hdpi = 3.3dp, radius 5px = 3.3dp, strip bawah 6px = 4dp
      dengan warna = fill x 0.84 (bevel "tombol timbul").
      x0.84 ga punya peran tema sendiri, jadi dipakai overlay hitam 16% (#29000000):
-     hasilnya proporsional buat SEMUA 18 preset, bukan hex mati satu warna. -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
+     hasilnya proporsional buat SEMUA 18 preset, bukan hex mati satu warna.
+
+     SUDUT: radius 3.3dp diganti chamfer (potong 45 derajat) @dimen/cut_corner_small.
+     <shape> ga bisa motong sudut — <corners> selalu busur — jadi bentuknya
+     CutCornerDrawable, di-inflate dari nama kelasnya sbg tag. aapt2 GA validasi
+     nama tag drawable, jadi typo di tag lolos build dan baru meledak waktu inflate.
+     Strip bevel ikut di-inset kiri/kanan @dimen/button_bevel_inset DAN sudut bawahnya
+     dipotong setinggi strip: tanpa itu strip full-width nongol keluar chamfer di dua
+     sudut bawah. Turunan angkanya di dimens.xml. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:inset="3.3dp">
     <layer-list>
         <item>
-            <shape android:shape="rectangle">
-                <solid android:color="?attr/themeAccent" />
-                <corners android:radius="3.3dp" />
-            </shape>
+            <com.winlator.cmod.widget.CutCornerDrawable
+                app:cutFillColor="?attr/themeAccent"
+                app:cutSize="@dimen/cut_corner_small" />
         </item>
-    <!-- state pressed: dulu hex-nya dinaikin manual (#0288D1 -> #039BE5).
-         Overlay putih 10% bikin efek sama buat 18 preset tanpa hex per-preset. -->
-    <item>
-        <shape android:shape="rectangle">
-            <solid android:color="#1AFFFFFF" />
-            <corners android:radius="3.3dp" />
-        </shape>
-    </item>
-        <item android:gravity="bottom|fill_horizontal" android:height="4dp">
-            <shape android:shape="rectangle">
-                <solid android:color="#29000000" />
-                <corners android:bottomLeftRadius="3.3dp" android:bottomRightRadius="3.3dp" />
-            </shape>
+        <!-- state pressed: dulu hex-nya dinaikin manual (#0288D1 -> #039BE5).
+             Overlay putih 10% bikin efek sama buat 18 preset tanpa hex per-preset. -->
+        <item>
+            <com.winlator.cmod.widget.CutCornerDrawable
+                app:cutFillColor="#1AFFFFFF"
+                app:cutSize="@dimen/cut_corner_small" />
+        </item>
+        <item
+            android:gravity="bottom|fill_horizontal"
+            android:height="@dimen/button_bevel_height"
+            android:left="@dimen/button_bevel_inset"
+            android:right="@dimen/button_bevel_inset">
+            <com.winlator.cmod.widget.CutCornerDrawable
+                app:cutFillColor="#29000000"
+                app:cutSizeBottomLeft="@dimen/button_bevel_height"
+                app:cutSizeBottomRight="@dimen/button_bevel_height" />
         </item>
     </layer-list>
 </inset>

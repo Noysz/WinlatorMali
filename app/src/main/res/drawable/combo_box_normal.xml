@@ -4,14 +4,24 @@
      inset 5px = 3.3dp, radius 5px = 3.3dp.
      Ada garis vertikal 2px yg misahin area teks dari kotak panah. 9-patch
      stretch-x cuma di kiri garis itu, jadi garis+panah ke-pin ke kanan:
-     lebar kotak panah tetap 50px@hdpi = 33.3dp berapa pun lebar spinner. -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
+     lebar kotak panah tetap 50px@hdpi = 33.3dp berapa pun lebar spinner.
+
+     SUDUT: radius 3.3dp diganti chamfer (potong 45 derajat) @dimen/cut_corner_small.
+     <shape> ga bisa motong sudut — <corners> selalu busur — jadi bentuknya
+     CutCornerDrawable, di-inflate dari nama kelasnya sbg tag. aapt2 GA validasi
+     nama tag drawable, jadi typo di tag lolos build dan baru meledak waktu inflate.
+     cutFillColor sengaja ga di-set: interiornya harus tetep transparan, cuma
+     outline-nya yg digambar. Garis pemisah tetep <shape> biasa — dia kotak lurus
+     jauh dari sudut, jadi ga ada yg perlu dipotong. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:inset="3.3dp">
     <layer-list>
         <item>
-            <shape android:shape="rectangle">
-                <corners android:radius="3.3dp" />
-                <stroke android:width="1.3dp" android:color="?attr/themeOnSurfaceVariant" />
-            </shape>
+            <com.winlator.cmod.widget.CutCornerDrawable
+                app:cutSize="@dimen/cut_corner_small"
+                app:cutStrokeColor="?attr/themeOnSurfaceVariant"
+                app:cutStrokeWidth="1.3dp" />
         </item>
         <item android:gravity="right|fill_vertical" android:width="1.3dp" android:right="33.3dp">
             <shape android:shape="rectangle">

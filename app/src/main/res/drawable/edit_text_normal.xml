@@ -8,11 +8,18 @@
      DI-DROP: PNG asli punya garis dalam 2px #E8E8E8 di sisi atas (bekas shadow
      "cekung" ala Material 2015). <shape> ga bisa naruh inner shadow, dan bikin
      tiruannya pakai layer tambahan cuma nambah 1 layer buat efek yg ga keliatan
-     di background gelap. Sengaja dibuang, bukan kelupaan. -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
-    <shape android:shape="rectangle">
-        <solid android:color="?attr/themeBackground" />
-        <stroke android:width="1.3dp" android:color="?attr/themeOnSurfaceVariant" />
-        <corners android:radius="3.3dp" />
-    </shape>
+     di background gelap. Sengaja dibuang, bukan kelupaan.
+
+     SUDUT: radius 3.3dp diganti chamfer (potong 45 derajat) @dimen/cut_corner_small.
+     <shape> ga bisa motong sudut — <corners> selalu busur — jadi bentuknya
+     CutCornerDrawable, di-inflate dari nama kelasnya sbg tag. aapt2 GA validasi
+     nama tag drawable, jadi typo di tag lolos build dan baru meledak waktu inflate. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:inset="3.3dp">
+    <com.winlator.cmod.widget.CutCornerDrawable
+        app:cutFillColor="?attr/themeBackground"
+        app:cutSize="@dimen/cut_corner_small"
+        app:cutStrokeColor="?attr/themeOnSurfaceVariant"
+        app:cutStrokeWidth="1.3dp" />
 </inset>

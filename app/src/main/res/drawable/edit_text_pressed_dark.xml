@@ -2,11 +2,18 @@
 <!-- Port dari drawable-hdpi/edit_text_pressed_dark.9.png (dihapus). Ukur PNG asli:
      inset 5px@hdpi = 3.3dp, radius 5px = 3.3dp, stroke 2px = 1.3dp.
      Isi field pakai themeBackground (peran paling gelap) — di PNG lama variant
-     dark isinya #000000 di atas dialog #424242, jadi kesannya "cekung". -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
-    <shape android:shape="rectangle">
-        <solid android:color="?attr/themeBackground" />
-        <stroke android:width="1.3dp" android:color="?attr/themeOnSurface" />
-        <corners android:radius="3.3dp" />
-    </shape>
+     dark isinya #000000 di atas dialog #424242, jadi kesannya "cekung".
+
+     SUDUT: radius 3.3dp diganti chamfer (potong 45 derajat) @dimen/cut_corner_small.
+     <shape> ga bisa motong sudut — <corners> selalu busur — jadi bentuknya
+     CutCornerDrawable, di-inflate dari nama kelasnya sbg tag. aapt2 GA validasi
+     nama tag drawable, jadi typo di tag lolos build dan baru meledak waktu inflate. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:inset="3.3dp">
+    <com.winlator.cmod.widget.CutCornerDrawable
+        app:cutFillColor="?attr/themeBackground"
+        app:cutSize="@dimen/cut_corner_small"
+        app:cutStrokeColor="?attr/themeOnSurface"
+        app:cutStrokeWidth="1.3dp" />
 </inset>

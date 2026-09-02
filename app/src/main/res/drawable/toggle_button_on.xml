@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Port dari drawable-hdpi/toggle_button_on.png (dihapus). State on.
      ToggleButton-nya fix 64x32dp di 5 layout, jadi geometri dihitung dari situ
-     (bukan dari px asset): pill radius 16dp, knob 24dp, offset 4dp dari tepi.
+     (bukan dari px asset): knob 24dp, offset 4dp dari tepi.
 
      BEDA SENGAJA dari PNG lama: pasangan warna dipilih yg kontrasnya DIJAMIN
      ThemePreset.ensureReadable (track = peran background, knob = peran "on"-nya
      = >=4.5:1). PNG lama malah knob (#EEEEEE) lebih terang dari track (#BDBDBD)
      buat state off — kontras ~1.2:1, nyaris ga keliatan. Posisi knob (kiri/kanan)
-     tetep jadi penanda utama state, sama kaya aslinya. -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+     tetep jadi penanda utama state, sama kaya aslinya.
+
+     SUDUT: track pill radius 16dp -> chamfer @dimen/cut_corner_toggle_track, knob
+     oval -> chamfer @dimen/cut_corner_toggle_knob (jadi oktagon). Dua-duanya
+     CutCornerDrawable; <shape> ga bisa motong sudut. Nilainya beda dari
+     cut_corner_small karena toggle tingginya fix 32dp — chamfer 6dp di situ
+     nyaris ga kebaca. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item>
-        <shape android:shape="rectangle">
-            <solid android:color="?attr/themeAccent" />
-            <corners android:radius="16dp" />
-        </shape>
+        <com.winlator.cmod.widget.CutCornerDrawable
+            app:cutFillColor="?attr/themeAccent"
+            app:cutSize="@dimen/cut_corner_toggle_track" />
     </item>
     <item
         android:gravity="right|center_vertical"
         android:right="4dp"
         android:width="24dp"
         android:height="24dp">
-        <shape android:shape="oval">
-            <solid android:color="?attr/themeOnAccent" />
-        </shape>
+        <com.winlator.cmod.widget.CutCornerDrawable
+            app:cutFillColor="?attr/themeOnAccent"
+            app:cutSize="@dimen/cut_corner_toggle_knob" />
     </item>
 </layer-list>

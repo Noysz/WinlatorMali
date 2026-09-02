@@ -6,12 +6,19 @@
 
      DINORMALISASI: PNG ini satu-satunya yg geometrinya beda dari 5 edit_text lain
      (radius 8px = 5.3dp, inset 4/3/4/4px = 2.7/2.0/2.7/2.7dp) — kelihatan digambar
-     tangan terpisah, bukan variasi yg disengaja. Di sini disamain ke 3.3dp/3.3dp
-     biar 6 state edit_text ga geser-geser waktu fokus pindah. -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android" android:inset="3.3dp">
-    <shape android:shape="rectangle">
-        <solid android:color="?attr/themeBackground" />
-        <stroke android:width="1.3dp" android:color="?attr/themeAccentOnSurface" />
-        <corners android:radius="3.3dp" />
-    </shape>
+     tangan terpisah, bukan variasi yg disengaja. Di sini disamain ke inset 3.3dp +
+     chamfer cut_corner_small biar 6 state edit_text ga geser-geser waktu fokus pindah.
+
+     SUDUT: radius 3.3dp diganti chamfer (potong 45 derajat) @dimen/cut_corner_small.
+     <shape> ga bisa motong sudut — <corners> selalu busur — jadi bentuknya
+     CutCornerDrawable, di-inflate dari nama kelasnya sbg tag. aapt2 GA validasi
+     nama tag drawable, jadi typo di tag lolos build dan baru meledak waktu inflate. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:inset="3.3dp">
+    <com.winlator.cmod.widget.CutCornerDrawable
+        app:cutFillColor="?attr/themeBackground"
+        app:cutSize="@dimen/cut_corner_small"
+        app:cutStrokeColor="?attr/themeAccentOnSurface"
+        app:cutStrokeWidth="1.3dp" />
 </inset>
