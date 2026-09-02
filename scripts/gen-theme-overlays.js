@@ -71,7 +71,7 @@ function makePreset(p) {
     };
 }
 
-// ---------- 14 preset: HARUS identik dgn ThemeManager.PRESETS ----------
+// ---------- 18 preset: HARUS identik dgn ThemeManager.PRESETS ----------
 // Urutan penting: index-nya yg disimpen di SharedPreferences. Jangan disusun ulang —
 // user yg udah milih preset #5 akan dapet preset lain kalau urutannya geser.
 const RAW = [
@@ -88,7 +88,12 @@ const RAW = [
     ['Emerald Depth', 0xFF051F20, 0xFF0B2B26, 0xFF163832, 0xFF8EB69B],
     ['Berry Pink', 0xFF450714, 0xFF851636, lerp(0xFF851636, 0xFFCF325F, 0.30), 0xFFCF325F],
     ['Ocean Ice', 0xFF021024, 0xFF052659, lerp(0xFF052659, 0xFF5483B3, 0.30), 0xFF5483B3],
-    ['Peach Maroon', 0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D]
+    ['Peach Maroon', 0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D],
+    // --- Batch 2 (index 14-17) ---
+    ['Solar Slate', 0xFF192230, 0xFF2C2F38, 0xFF3F4952, 0xFFFFD001],
+    ['Crimson Charcoal', 0xFF1E1E28, 0xFF272228, lerp(0xFF272228, 0xFFD6013B, 0.30), 0xFFD6013B],
+    ['Urban Ember', 0xFF3A3F43, 0xFF666C7B, lerp(0xFF666C7B, 0xFFDC5F00, 0.30), 0xFFDC5F00],
+    ['Midnight Amber', 0xFF262236, 0xFF3D4F7E, lerp(0xFF3D4F7E, 0xFFE18546, 0.30), 0xFFE18546]
 ];
 
 // slug buat nama style: "Crimson Dusk" -> "CrimsonDusk"
@@ -145,6 +150,17 @@ presets.forEach((t, i) => {
     lines.push(`        <item name="themeColorPrimaryDark">${hex(t.onSurfaceVariant)}</item>`);
     // AppCompat: bikin widget bawaan (checkbox, ripple, seekbar) ikut accent preset.
     lines.push(`        <item name="colorAccent">${hex(t.accentOnSurface)}</item>`);
+    // `colorAccent` sendiri CUMA nyentuh widget AppCompat. Switch/CheckBox yg ke-inflate
+    // sebagai widget FRAMEWORK (mis. di dalam ContentDialog, yg parent-nya
+    // @android:style/Theme.Dialog — bukan tema app) ambil tint dari attr `android:`,
+    // yang ga ikut ke-override sama colorAccent. Tanpa 3 baris di bawah, toggle di dialog
+    // nempel di warna accent bawaan tema platform, ga ikut preset.
+    lines.push(`        <item name="android:colorAccent">${hex(t.accentOnSurface)}</item>`);
+    lines.push(`        <item name="colorControlActivated">${hex(t.accentOnSurface)}</item>`);
+    lines.push(`        <item name="android:colorControlActivated">${hex(t.accentOnSurface)}</item>`);
+    // State OFF/normal (track switch mati, stroke checkbox kosong, tint ikon).
+    lines.push(`        <item name="colorControlNormal">${hex(t.onSurfaceVariant)}</item>`);
+    lines.push(`        <item name="android:colorControlNormal">${hex(t.onSurfaceVariant)}</item>`);
     lines.push(`        <item name="android:windowBackground">${hex(t.background)}</item>`);
     lines.push(`        <item name="android:colorBackground">${hex(t.background)}</item>`);
     lines.push('    </style>');

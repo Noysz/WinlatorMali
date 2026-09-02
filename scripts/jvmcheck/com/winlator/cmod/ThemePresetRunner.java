@@ -27,13 +27,19 @@ public final class ThemePresetRunner {
         { 0xFF051F20, 0xFF0B2B26, 0xFF163832, 0xFF8EB69B },
         { 0xFF450714, 0xFF851636, 0, 0xFFCF325F },          // derived
         { 0xFF021024, 0xFF052659, 0, 0xFF5483B3 },          // derived
-        { 0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D }
+        { 0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D },
+        // --- Batch 2 (index 14-17) ---
+        { 0xFF192230, 0xFF2C2F38, 0xFF3F4952, 0xFFFFD001 },
+        { 0xFF1E1E28, 0xFF272228, 0, 0xFFD6013B },          // derived
+        { 0xFF3A3F43, 0xFF666C7B, 0, 0xFFDC5F00 },          // derived
+        { 0xFF262236, 0xFF3D4F7E, 0, 0xFFE18546 }           // derived
     };
 
     private static final String[] NAMES = {
         "Crimson Dusk", "Mauve Ash", "Violet Cream", "Dusk Coral", "Navy Blush", "Twilight Rose",
         "Rust Pine", "Grape Sunset", "Cocoa Cream", "Orchid Lavender", "Emerald Depth",
-        "Berry Pink", "Ocean Ice", "Peach Maroon"
+        "Berry Pink", "Ocean Ice", "Peach Maroon",
+        "Solar Slate", "Crimson Charcoal", "Urban Ember", "Midnight Amber"
     };
 
     public static void main(String[] args) {

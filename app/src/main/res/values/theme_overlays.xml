@@ -37,6 +37,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFADADAD</item>
         <item name="colorAccent">#FFC85464</item>
+        <item name="android:colorAccent">#FFC85464</item>
+        <item name="colorControlActivated">#FFC85464</item>
+        <item name="android:colorControlActivated">#FFC85464</item>
+        <item name="colorControlNormal">#FFADADAD</item>
+        <item name="android:colorControlNormal">#FFADADAD</item>
         <item name="android:windowBackground">#FF181A2F</item>
         <item name="android:colorBackground">#FF181A2F</item>
     </style>
@@ -61,6 +66,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFEBEBEB</item>
         <item name="colorAccent">#FFB79D9B</item>
+        <item name="android:colorAccent">#FFB79D9B</item>
+        <item name="colorControlActivated">#FFB79D9B</item>
+        <item name="android:colorControlActivated">#FFB79D9B</item>
+        <item name="colorControlNormal">#FFEBEBEB</item>
+        <item name="android:colorControlNormal">#FFEBEBEB</item>
         <item name="android:windowBackground">#FF30333A</item>
         <item name="android:colorBackground">#FF30333A</item>
     </style>
@@ -85,6 +95,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFAAAAAA</item>
         <item name="colorAccent">#FF8F5D78</item>
+        <item name="android:colorAccent">#FF8F5D78</item>
+        <item name="colorControlActivated">#FF8F5D78</item>
+        <item name="android:colorControlActivated">#FF8F5D78</item>
+        <item name="colorControlNormal">#FFAAAAAA</item>
+        <item name="android:colorControlNormal">#FFAAAAAA</item>
         <item name="android:windowBackground">#FF190019</item>
         <item name="android:colorBackground">#FF190019</item>
     </style>
@@ -109,6 +124,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFDBDBDB</item>
         <item name="colorAccent">#FFD5A1A5</item>
+        <item name="android:colorAccent">#FFD5A1A5</item>
+        <item name="colorControlActivated">#FFD5A1A5</item>
+        <item name="android:colorControlActivated">#FFD5A1A5</item>
+        <item name="colorControlNormal">#FFDBDBDB</item>
+        <item name="android:colorControlNormal">#FFDBDBDB</item>
         <item name="android:windowBackground">#FF2E365A</item>
         <item name="android:colorBackground">#FF2E365A</item>
     </style>
@@ -133,6 +153,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFAAAAAA</item>
         <item name="colorAccent">#FFFE8492</item>
+        <item name="android:colorAccent">#FFFE8492</item>
+        <item name="colorControlActivated">#FFFE8492</item>
+        <item name="android:colorControlActivated">#FFFE8492</item>
+        <item name="colorControlNormal">#FFAAAAAA</item>
+        <item name="android:colorControlNormal">#FFAAAAAA</item>
         <item name="android:windowBackground">#FF221820</item>
         <item name="android:colorBackground">#FF221820</item>
     </style>
@@ -157,6 +182,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFD3D3D3</item>
         <item name="colorAccent">#FFC38EB4</item>
+        <item name="android:colorAccent">#FFC38EB4</item>
+        <item name="colorControlActivated">#FFC38EB4</item>
+        <item name="android:colorControlActivated">#FFC38EB4</item>
+        <item name="colorControlNormal">#FFD3D3D3</item>
+        <item name="android:colorControlNormal">#FFD3D3D3</item>
         <item name="android:windowBackground">#FF0E1F2F</item>
         <item name="android:colorBackground">#FF0E1F2F</item>
     </style>
@@ -181,6 +211,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFCACACA</item>
         <item name="colorAccent">#FFDB9F75</item>
+        <item name="android:colorAccent">#FFDB9F75</item>
+        <item name="colorControlActivated">#FFDB9F75</item>
+        <item name="android:colorControlActivated">#FFDB9F75</item>
+        <item name="colorControlNormal">#FFCACACA</item>
+        <item name="android:colorControlNormal">#FFCACACA</item>
         <item name="android:windowBackground">#FF12232A</item>
         <item name="android:colorBackground">#FF12232A</item>
     </style>
@@ -205,6 +240,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFAAAAAA</item>
         <item name="colorAccent">#FFF39F5A</item>
+        <item name="android:colorAccent">#FFF39F5A</item>
+        <item name="colorControlActivated">#FFF39F5A</item>
+        <item name="android:colorControlActivated">#FFF39F5A</item>
+        <item name="colorControlNormal">#FFAAAAAA</item>
+        <item name="android:colorControlNormal">#FFAAAAAA</item>
         <item name="android:windowBackground">#FF1D1A39</item>
         <item name="android:colorBackground">#FF1D1A39</item>
     </style>
@@ -229,6 +269,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FF292929</item>
         <item name="colorAccent">#FFE1D4C2</item>
+        <item name="android:colorAccent">#FFE1D4C2</item>
+        <item name="colorControlActivated">#FFE1D4C2</item>
+        <item name="android:colorControlActivated">#FFE1D4C2</item>
+        <item name="colorControlNormal">#FF292929</item>
+        <item name="android:colorControlNormal">#FF292929</item>
         <item name="android:windowBackground">#FF291C0E</item>
         <item name="android:colorBackground">#FF291C0E</item>
     </style>
@@ -253,6 +298,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFD5D5D5</item>
         <item name="colorAccent">#FFB98BCC</item>
+        <item name="android:colorAccent">#FFB98BCC</item>
+        <item name="colorControlActivated">#FFB98BCC</item>
+        <item name="android:colorControlActivated">#FFB98BCC</item>
+        <item name="colorControlNormal">#FFD5D5D5</item>
+        <item name="android:colorControlNormal">#FFD5D5D5</item>
         <item name="android:windowBackground">#FF49225B</item>
         <item name="android:colorBackground">#FF49225B</item>
     </style>
@@ -277,6 +327,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFAAAAAA</item>
         <item name="colorAccent">#FF8EB69B</item>
+        <item name="android:colorAccent">#FF8EB69B</item>
+        <item name="colorControlActivated">#FF8EB69B</item>
+        <item name="android:colorControlActivated">#FF8EB69B</item>
+        <item name="colorControlNormal">#FFAAAAAA</item>
+        <item name="android:colorControlNormal">#FFAAAAAA</item>
         <item name="android:windowBackground">#FF051F20</item>
         <item name="android:colorBackground">#FF051F20</item>
     </style>
@@ -301,6 +356,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFC4C4C4</item>
         <item name="colorAccent">#FFDC6B8C</item>
+        <item name="android:colorAccent">#FFDC6B8C</item>
+        <item name="colorControlActivated">#FFDC6B8C</item>
+        <item name="android:colorControlActivated">#FFDC6B8C</item>
+        <item name="colorControlNormal">#FFC4C4C4</item>
+        <item name="android:colorControlNormal">#FFC4C4C4</item>
         <item name="android:windowBackground">#FF450714</item>
         <item name="android:colorBackground">#FF450714</item>
     </style>
@@ -325,6 +385,11 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFAFAFAF</item>
         <item name="colorAccent">#FF5483B3</item>
+        <item name="android:colorAccent">#FF5483B3</item>
+        <item name="colorControlActivated">#FF5483B3</item>
+        <item name="android:colorControlActivated">#FF5483B3</item>
+        <item name="colorControlNormal">#FFAFAFAF</item>
+        <item name="android:colorControlNormal">#FFAFAFAF</item>
         <item name="android:windowBackground">#FF021024</item>
         <item name="android:colorBackground">#FF021024</item>
     </style>
@@ -349,7 +414,128 @@
         <item name="themeColorPrimary">#FFE0E0E0</item>
         <item name="themeColorPrimaryDark">#FFD8D8D8</item>
         <item name="colorAccent">#FFE47D8D</item>
+        <item name="android:colorAccent">#FFE47D8D</item>
+        <item name="colorControlActivated">#FFE47D8D</item>
+        <item name="android:colorControlActivated">#FFE47D8D</item>
+        <item name="colorControlNormal">#FFD8D8D8</item>
+        <item name="android:colorControlNormal">#FFD8D8D8</item>
         <item name="android:windowBackground">#FF4C1D3D</item>
         <item name="android:colorBackground">#FF4C1D3D</item>
+    </style>
+
+    <!-- 14: Solar Slate -->
+    <style name="ThemePreset.SolarSlate" parent="">
+        <item name="themeBackground">#FF192230</item>
+        <item name="themeSurface">#FF2C2F38</item>
+        <item name="themeSurfaceVariant">#FF3F4952</item>
+        <item name="themeAccent">#FFFFD001</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFB6B6B6</item>
+        <item name="themeOnAccent">#FF5C5C5C</item>
+        <item name="themeAccentDim">#FF735E00</item>
+        <item name="themeAccentOnSurface">#FFFFD001</item>
+        <item name="themeDivider">#FF4F4F4F</item>
+        <item name="themeSurfaceContainer">#FF353840</item>
+        <item name="themeSurfaceContainerHigh">#FF3C3F47</item>
+        <item name="themeSurfaceContainerHighest">#FF454850</item>
+        <item name="themeColorAccent">#FFFFD001</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFB6B6B6</item>
+        <item name="colorAccent">#FFFFD001</item>
+        <item name="android:colorAccent">#FFFFD001</item>
+        <item name="colorControlActivated">#FFFFD001</item>
+        <item name="android:colorControlActivated">#FFFFD001</item>
+        <item name="colorControlNormal">#FFB6B6B6</item>
+        <item name="android:colorControlNormal">#FFB6B6B6</item>
+        <item name="android:windowBackground">#FF192230</item>
+        <item name="android:colorBackground">#FF192230</item>
+    </style>
+
+    <!-- 15: Crimson Charcoal -->
+    <style name="ThemePreset.CrimsonCharcoal" parent="">
+        <item name="themeBackground">#FF1E1E28</item>
+        <item name="themeSurface">#FF272228</item>
+        <item name="themeSurfaceVariant">#FF5C182E</item>
+        <item name="themeAccent">#FFD6013B</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFAAAAAA</item>
+        <item name="themeOnAccent">#FFFFFFFF</item>
+        <item name="themeAccentDim">#FF60001B</item>
+        <item name="themeAccentOnSurface">#FFD80B43</item>
+        <item name="themeDivider">#FF444444</item>
+        <item name="themeSurfaceContainer">#FF302C31</item>
+        <item name="themeSurfaceContainerHigh">#FF383339</item>
+        <item name="themeSurfaceContainerHighest">#FF413D42</item>
+        <item name="themeColorAccent">#FFD80B43</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFAAAAAA</item>
+        <item name="colorAccent">#FFD80B43</item>
+        <item name="android:colorAccent">#FFD80B43</item>
+        <item name="colorControlActivated">#FFD80B43</item>
+        <item name="android:colorControlActivated">#FFD80B43</item>
+        <item name="colorControlNormal">#FFAAAAAA</item>
+        <item name="android:colorControlNormal">#FFAAAAAA</item>
+        <item name="android:windowBackground">#FF1E1E28</item>
+        <item name="android:colorBackground">#FF1E1E28</item>
+    </style>
+
+    <!-- 16: Urban Ember -->
+    <style name="ThemePreset.UrbanEmber" parent="">
+        <item name="themeBackground">#FF3A3F43</item>
+        <item name="themeSurface">#FF666C7B</item>
+        <item name="themeSurfaceVariant">#FF896856</item>
+        <item name="themeAccent">#FFDC5F00</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFEEEEEE</item>
+        <item name="themeOnSurfaceVariant">#FFF3F3F3</item>
+        <item name="themeOnAccent">#FF1A1A1A</item>
+        <item name="themeAccentDim">#FF632B00</item>
+        <item name="themeAccentOnSurface">#FFF0B98F</item>
+        <item name="themeDivider">#FF404040</item>
+        <item name="themeSurfaceContainer">#FF6D7381</item>
+        <item name="themeSurfaceContainerHigh">#FF727885</item>
+        <item name="themeSurfaceContainerHighest">#FF797E8B</item>
+        <item name="themeColorAccent">#FFF0B98F</item>
+        <item name="themeColorPrimary">#FFEEEEEE</item>
+        <item name="themeColorPrimaryDark">#FFF3F3F3</item>
+        <item name="colorAccent">#FFF0B98F</item>
+        <item name="android:colorAccent">#FFF0B98F</item>
+        <item name="colorControlActivated">#FFF0B98F</item>
+        <item name="android:colorControlActivated">#FFF0B98F</item>
+        <item name="colorControlNormal">#FFF3F3F3</item>
+        <item name="android:colorControlNormal">#FFF3F3F3</item>
+        <item name="android:windowBackground">#FF3A3F43</item>
+        <item name="android:colorBackground">#FF3A3F43</item>
+    </style>
+
+    <!-- 17: Midnight Amber -->
+    <style name="ThemePreset.MidnightAmber" parent="">
+        <item name="themeBackground">#FF262236</item>
+        <item name="themeSurface">#FF3D4F7E</item>
+        <item name="themeSurfaceVariant">#FF6E5F6D</item>
+        <item name="themeAccent">#FFE18546</item>
+        <item name="themeOnBackground">#FFFFFFFF</item>
+        <item name="themeOnSurface">#FFE0E0E0</item>
+        <item name="themeOnSurfaceVariant">#FFE0E0E0</item>
+        <item name="themeOnAccent">#FF333333</item>
+        <item name="themeAccentDim">#FF653C20</item>
+        <item name="themeAccentOnSurface">#FFE28A4D</item>
+        <item name="themeDivider">#FF727272</item>
+        <item name="themeSurfaceContainer">#FF455683</item>
+        <item name="themeSurfaceContainerHigh">#FF4C5C87</item>
+        <item name="themeSurfaceContainerHighest">#FF54638C</item>
+        <item name="themeColorAccent">#FFE28A4D</item>
+        <item name="themeColorPrimary">#FFE0E0E0</item>
+        <item name="themeColorPrimaryDark">#FFE0E0E0</item>
+        <item name="colorAccent">#FFE28A4D</item>
+        <item name="android:colorAccent">#FFE28A4D</item>
+        <item name="colorControlActivated">#FFE28A4D</item>
+        <item name="android:colorControlActivated">#FFE28A4D</item>
+        <item name="colorControlNormal">#FFE0E0E0</item>
+        <item name="android:colorControlNormal">#FFE0E0E0</item>
+        <item name="android:windowBackground">#FF262236</item>
+        <item name="android:colorBackground">#FF262236</item>
     </style>
 </resources>

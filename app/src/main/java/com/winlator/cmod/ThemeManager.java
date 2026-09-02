@@ -51,7 +51,7 @@ public final class ThemeManager {
     private ThemeManager() {}
 
     // ------------------------------------------------------------------------------------
-    // 14 presets, derived from the moodboard palettes. Each is [background, surface,
+    // 18 presets, derived from the moodboard palettes. Each is [background, surface,
     // surfaceVariant, primary]. Where a palette didn't have a natural 3rd dark stop for
     // surfaceVariant, it's derived via ThemePreset.lerp(surface, primary, 0.30f) instead of a
     // hand-picked hex — noted inline below.
@@ -81,7 +81,15 @@ public final class ThemeManager {
                 ThemePreset.lerp(0xFF851636, 0xFFCF325F, 0.30f) /* derived */, 0xFFCF325F),
         new ThemePreset("Ocean Ice",       0xFF021024, 0xFF052659,
                 ThemePreset.lerp(0xFF052659, 0xFF5483B3, 0.30f) /* derived */, 0xFF5483B3),
-        new ThemePreset("Peach Maroon",    0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D)
+        new ThemePreset("Peach Maroon",    0xFF4C1D3D, 0xFF852E4E, 0xFFA33757, 0xFFDC586D),
+        // --- Batch 2: Noguchi-style brand palettes (appended; index 14-17) ---
+        new ThemePreset("Solar Slate",      0xFF192230, 0xFF2C2F38, 0xFF3F4952, 0xFFFFD001),
+        new ThemePreset("Crimson Charcoal", 0xFF1E1E28, 0xFF272228,
+                ThemePreset.lerp(0xFF272228, 0xFFD6013B, 0.30f) /* derived */, 0xFFD6013B),
+        new ThemePreset("Urban Ember",      0xFF3A3F43, 0xFF666C7B,
+                ThemePreset.lerp(0xFF666C7B, 0xFFDC5F00, 0.30f) /* derived */, 0xFFDC5F00),
+        new ThemePreset("Midnight Amber",   0xFF262236, 0xFF3D4F7E,
+                ThemePreset.lerp(0xFF3D4F7E, 0xFFE18546, 0.30f) /* derived */, 0xFFE18546)
     );
 
     /**
@@ -104,7 +112,11 @@ public final class ThemeManager {
         R.style.ThemePreset_EmeraldDepth,
         R.style.ThemePreset_BerryPink,
         R.style.ThemePreset_OceanIce,
-        R.style.ThemePreset_PeachMaroon
+        R.style.ThemePreset_PeachMaroon,
+        R.style.ThemePreset_SolarSlate,
+        R.style.ThemePreset_CrimsonCharcoal,
+        R.style.ThemePreset_UrbanEmber,
+        R.style.ThemePreset_MidnightAmber
     };
 
     public static final int DEFAULT_PRESET_INDEX = 0; // "Crimson Dusk"
