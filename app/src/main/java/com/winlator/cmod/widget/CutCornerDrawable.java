@@ -11,6 +11,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -49,6 +50,17 @@ import java.io.IOException;
  * aapt2 does not validate drawable tag names, so a typo in the tag survives the build and only
  * throws when the drawable is first inflated.
  *
+ * <h3>How {@code ?attr/} is resolved (the part that is not obvious)</h3>
+ * {@code ResourcesImpl.loadXmlDrawable} inflates every drawable resource with a <em>null</em> theme,
+ * so a {@code ?attr/} value arrives here as an unresolved {@code TYPE_ATTRIBUTE} and reading it with
+ * {@code TypedArray.getColor} throws {@code UnsupportedOperationException}. The framework's own
+ * drawables do not resolve these at inflate time either: they remember the attribute ids and wait
+ * for {@code Resources.loadDrawable} to call {@link #applyTheme(Resources.Theme)} with the real
+ * theme. This class follows the same two-phase contract, which is also why it has a
+ * {@link #getConstantState() constant state} — {@code DrawableWrapperState.canApplyTheme()} asks the
+ * wrapped drawable's constant state, not the drawable, so an {@code <inset>} around a drawable
+ * without one reports that it cannot be themed and the second phase is skipped in silence.
+ *
  * <p>Colors are fixed once set. Callers that build one in Java make a fresh instance per use rather
  * than mutating a shared one, which is also why there are no color setters — {@link #setAlpha(int)}
  * and {@link #setColorFilter(ColorFilter)} exist only because {@link Drawable} requires them.
@@ -61,13 +73,7 @@ public class CutCornerDrawable extends Drawable {
     private final Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
 
-    private int fillColor = Color.TRANSPARENT;
-    private int strokeColor = Color.TRANSPARENT;
-    private float strokeWidthPx;
-    private float cutTopLeftPx;
-    private float cutTopRightPx;
-    private float cutBottomRightPx;
-    private float cutBottomLeftPx;
+    private CutState state;
 
     private int alpha = 0xFF;
     private boolean pathDirty = true;
@@ -78,8 +84,7 @@ public class CutCornerDrawable extends Drawable {
      * of the other two constructors.
      */
     public CutCornerDrawable() {
-        fillPaint.setStyle(Paint.Style.FILL);
-        strokePaint.setStyle(Paint.Style.STROKE);
+        this(new CutState());
     }
 
     public CutCornerDrawable(int fillColor, float cutPx) {
@@ -92,17 +97,22 @@ public class CutCornerDrawable extends Drawable {
      * @param strokeWidthPx {@code <= 0} for no outline
      */
     public CutCornerDrawable(int fillColor, float cutPx, float strokeWidthPx, int strokeColor) {
-        this();
-        this.fillColor = fillColor;
-        this.strokeColor = strokeColor;
-        this.strokeWidthPx = strokeWidthPx;
-        this.cutTopLeftPx = cutPx;
-        this.cutTopRightPx = cutPx;
-        this.cutBottomRightPx = cutPx;
-        this.cutBottomLeftPx = cutPx;
+        this(new CutState());
+        state.fillColor = fillColor;
+        state.strokeColor = strokeColor;
+        state.strokeWidthPx = strokeWidthPx;
+        state.cutTopLeftPx = cutPx;
+        state.cutTopRightPx = cutPx;
+        state.cutBottomRightPx = cutPx;
+        state.cutBottomLeftPx = cutPx;
+        syncFromState();
+    }
 
-        strokePaint.setStrokeWidth(Math.max(0f, strokeWidthPx));
-        syncPaints();
+    private CutCornerDrawable(@NonNull CutState state) {
+        this.state = state;
+        fillPaint.setStyle(Paint.Style.FILL);
+        strokePaint.setStyle(Paint.Style.STROKE);
+        syncFromState();
     }
 
     @Override
@@ -112,28 +122,143 @@ public class CutCornerDrawable extends Drawable {
         // Handles android:visible, which is declared on Drawable itself and not in our styleable.
         super.inflate(r, parser, attrs, theme);
 
-        // Going through the theme is what makes `?attr/themeSurface` resolvable here; the plain
-        // Resources path (no theme) would hand back the unresolved attribute reference instead.
+        // theme is null in practice — see the class doc. The themed branch is kept for the callers
+        // that do pass one (Drawable.createFromXmlInner from a themed context).
         final TypedArray a = theme != null
                 ? theme.obtainStyledAttributes(attrs, R.styleable.CutCornerDrawable, 0, 0)
                 : r.obtainAttributes(attrs, R.styleable.CutCornerDrawable);
         try {
-            fillColor = a.getColor(R.styleable.CutCornerDrawable_cutFillColor, Color.TRANSPARENT);
-            strokeColor = a.getColor(R.styleable.CutCornerDrawable_cutStrokeColor, Color.TRANSPARENT);
-            strokeWidthPx = a.getDimension(R.styleable.CutCornerDrawable_cutStrokeWidth, 0f);
-
-            final float all = a.getDimension(R.styleable.CutCornerDrawable_cutSize, 0f);
-            cutTopLeftPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeTopLeft, all);
-            cutTopRightPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeTopRight, all);
-            cutBottomRightPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeBottomRight, all);
-            cutBottomLeftPx = a.getDimension(R.styleable.CutCornerDrawable_cutSizeBottomLeft, all);
+            state.changingConfigurations |= a.getChangingConfigurations();
+            state.presentMask = presentMask(a);
+            state.themeAttrs = extractThemeAttrs(a);
+            updateStateFrom(a);
         } finally {
             a.recycle();
         }
+        syncFromState();
+    }
 
-        strokePaint.setStrokeWidth(Math.max(0f, strokeWidthPx));
-        syncPaints();
-        pathDirty = true;
+    /** Which attributes the XML actually spelled out, resolved or not — {@code cutSize} needs it. */
+    private static int presentMask(@NonNull TypedArray a) {
+        int mask = 0;
+        for (int i = 0; i < R.styleable.CutCornerDrawable.length; i++) {
+            if (a.hasValue(i)) mask |= 1 << i;
+        }
+        return mask;
+    }
+
+    /**
+     * Collects the attribute ids behind the {@code ?attr/} values the framework left unresolved,
+     * indexed by position in {@code R.styleable.CutCornerDrawable}. Returns null when there is
+     * nothing to defer, which is what {@link #canApplyTheme()} keys off.
+     *
+     * <p>{@link TypedArray#peekValue} is the only getter that reports a {@code TYPE_ATTRIBUTE}
+     * instead of throwing on it, hence reading the raw value rather than calling {@code getColor}.
+     */
+    @Nullable
+    private static int[] extractThemeAttrs(@NonNull TypedArray a) {
+        int[] deferred = null;
+        for (int i = 0; i < R.styleable.CutCornerDrawable.length; i++) {
+            final TypedValue v = a.peekValue(i);
+            if (v == null || v.type != TypedValue.TYPE_ATTRIBUTE || v.data == 0) continue;
+            if (deferred == null) deferred = new int[R.styleable.CutCornerDrawable.length];
+            deferred[i] = v.data;
+        }
+        return deferred;
+    }
+
+    private void updateStateFrom(@NonNull TypedArray a) {
+        final CutState s = state;
+        s.fillColor = color(a, R.styleable.CutCornerDrawable_cutFillColor, s.fillColor);
+        s.strokeColor = color(a, R.styleable.CutCornerDrawable_cutStrokeColor, s.strokeColor);
+        s.strokeWidthPx = dimension(a, R.styleable.CutCornerDrawable_cutStrokeWidth, s.strokeWidthPx);
+
+        final float all = dimension(a, R.styleable.CutCornerDrawable_cutSize, 0f);
+        s.cutTopLeftPx = dimension(a, R.styleable.CutCornerDrawable_cutSizeTopLeft, all);
+        s.cutTopRightPx = dimension(a, R.styleable.CutCornerDrawable_cutSizeTopRight, all);
+        s.cutBottomRightPx = dimension(a, R.styleable.CutCornerDrawable_cutSizeBottomRight, all);
+        s.cutBottomLeftPx = dimension(a, R.styleable.CutCornerDrawable_cutSizeBottomLeft, all);
+    }
+
+    private int color(@NonNull TypedArray a, int index, int fallback) {
+        return isDeferred(index) ? fallback : a.getColor(index, fallback);
+    }
+
+    private float dimension(@NonNull TypedArray a, int index, float fallback) {
+        return isDeferred(index) ? fallback : a.getDimension(index, fallback);
+    }
+
+    private boolean isDeferred(int index) {
+        return state.themeAttrs != null && state.themeAttrs[index] != 0;
+    }
+
+    private boolean isSpelledOut(int index) {
+        return (state.presentMask & (1 << index)) != 0;
+    }
+
+    @Override
+    public boolean canApplyTheme() {
+        return state.themeAttrs != null || super.canApplyTheme();
+    }
+
+    @Override
+    public void applyTheme(@NonNull Resources.Theme t) {
+        super.applyTheme(t);
+        final CutState s = state;
+        if (s.themeAttrs == null) return;
+
+        // cutSize goes first: it seeds only the corners that did not spell out a value of their own,
+        // the same cascade updateStateFrom() applies.
+        if (isDeferred(R.styleable.CutCornerDrawable_cutSize)) {
+            final float all = resolveDimension(t, R.styleable.CutCornerDrawable_cutSize, 0f);
+            if (!isSpelledOut(R.styleable.CutCornerDrawable_cutSizeTopLeft)) s.cutTopLeftPx = all;
+            if (!isSpelledOut(R.styleable.CutCornerDrawable_cutSizeTopRight)) s.cutTopRightPx = all;
+            if (!isSpelledOut(R.styleable.CutCornerDrawable_cutSizeBottomRight)) s.cutBottomRightPx = all;
+            if (!isSpelledOut(R.styleable.CutCornerDrawable_cutSizeBottomLeft)) s.cutBottomLeftPx = all;
+        }
+
+        s.fillColor = resolveColor(t, R.styleable.CutCornerDrawable_cutFillColor, s.fillColor);
+        s.strokeColor = resolveColor(t, R.styleable.CutCornerDrawable_cutStrokeColor, s.strokeColor);
+        s.strokeWidthPx = resolveDimension(t, R.styleable.CutCornerDrawable_cutStrokeWidth, s.strokeWidthPx);
+        s.cutTopLeftPx = resolveDimension(t, R.styleable.CutCornerDrawable_cutSizeTopLeft, s.cutTopLeftPx);
+        s.cutTopRightPx = resolveDimension(t, R.styleable.CutCornerDrawable_cutSizeTopRight, s.cutTopRightPx);
+        s.cutBottomRightPx = resolveDimension(t, R.styleable.CutCornerDrawable_cutSizeBottomRight, s.cutBottomRightPx);
+        s.cutBottomLeftPx = resolveDimension(t, R.styleable.CutCornerDrawable_cutSizeBottomLeft, s.cutBottomLeftPx);
+
+        // themeAttrs is deliberately kept: ResourcesImpl caches the drawable per theme, and a cache
+        // hit hands out a copy that must still be resolvable against the theme it is handed.
+        syncFromState();
+    }
+
+    private int resolveColor(@NonNull Resources.Theme t, int index, int fallback) {
+        final TypedValue v = resolve(t, index);
+        if (v == null) return fallback;
+        if (v.type >= TypedValue.TYPE_FIRST_COLOR_INT && v.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+            return v.data;
+        }
+        // A color resource that is itself an XML selector resolves to its file name, not a value.
+        if (v.resourceId != 0) {
+            try {
+                return t.getResources().getColor(v.resourceId, t);
+            } catch (Resources.NotFoundException ignored) {
+                return fallback;
+            }
+        }
+        return fallback;
+    }
+
+    private float resolveDimension(@NonNull Resources.Theme t, int index, float fallback) {
+        final TypedValue v = resolve(t, index);
+        if (v == null || v.type != TypedValue.TYPE_DIMENSION) return fallback;
+        return v.getDimension(t.getResources().getDisplayMetrics());
+    }
+
+    /** Resolved value of a deferred attribute, or null if it is not deferred or the theme lacks it. */
+    @Nullable
+    private TypedValue resolve(@NonNull Resources.Theme t, int index) {
+        if (!isDeferred(index)) return null;
+        final TypedValue v = new TypedValue();
+        return t.resolveAttribute(state.themeAttrs[index], v, true) ? v : null;
     }
 
     @Override
@@ -141,15 +266,17 @@ public class CutCornerDrawable extends Drawable {
         if (getBounds().isEmpty()) return;
         if (pathDirty) rebuildPath();
 
-        if (Color.alpha(fillColor) > 0) canvas.drawPath(path, fillPaint);
-        if (strokeWidthPx > 0 && Color.alpha(strokeColor) > 0) canvas.drawPath(path, strokePaint);
+        if (Color.alpha(state.fillColor) > 0) canvas.drawPath(path, fillPaint);
+        if (state.strokeWidthPx > 0 && Color.alpha(state.strokeColor) > 0) {
+            canvas.drawPath(path, strokePaint);
+        }
     }
 
     private void rebuildPath() {
         final Rect b = getBounds();
         // A stroke is centred on the path it follows, so half its width would fall outside the
         // bounds and be clipped away. Inset by half — the same correction GradientDrawable makes.
-        final float inset = strokeWidthPx > 0 ? strokeWidthPx / 2f : 0f;
+        final float inset = state.strokeWidthPx > 0 ? state.strokeWidthPx / 2f : 0f;
         final float left = b.left + inset;
         final float top = b.top + inset;
         final float right = b.right - inset;
@@ -163,10 +290,10 @@ public class CutCornerDrawable extends Drawable {
         // A stroke wider than the bounds inverts them; nothing sensible to draw.
         if (w <= 0 || h <= 0) return;
 
-        final float tl0 = Math.max(0f, cutTopLeftPx);
-        final float tr0 = Math.max(0f, cutTopRightPx);
-        final float br0 = Math.max(0f, cutBottomRightPx);
-        final float bl0 = Math.max(0f, cutBottomLeftPx);
+        final float tl0 = Math.max(0f, state.cutTopLeftPx);
+        final float tr0 = Math.max(0f, state.cutTopRightPx);
+        final float br0 = Math.max(0f, state.cutBottomRightPx);
+        final float bl0 = Math.max(0f, state.cutBottomLeftPx);
 
         // Two chamfers sharing a side cannot be longer together than that side, or the path crosses
         // itself and renders as a bow tie. Shrink all four proportionally by the worst offender —
@@ -241,19 +368,91 @@ public class CutCornerDrawable extends Drawable {
         return PixelFormat.TRANSLUCENT;
     }
 
-    // getConstantState() is deliberately left returning null: ResourcesImpl only caches a drawable
-    // that reports one, so every inflation re-reads the ?attr/ colors against the theme in effect
-    // right now. Costs a re-parse per inflation, buys immunity to a cached drawable outliving a
-    // preset switch.
+    @Nullable
+    @Override
+    public ConstantState getConstantState() {
+        return state;
+    }
+
+    @Override
+    public int getChangingConfigurations() {
+        return super.getChangingConfigurations() | state.changingConfigurations;
+    }
+
+    /** Pushes {@link #state} into the paints and invalidates the cached path. */
+    private void syncFromState() {
+        strokePaint.setStrokeWidth(Math.max(0f, state.strokeWidthPx));
+        syncPaints();
+        pathDirty = true;
+    }
 
     private void syncPaints() {
-        fillPaint.setColor(modulateAlpha(fillColor, alpha));
-        strokePaint.setColor(modulateAlpha(strokeColor, alpha));
+        fillPaint.setColor(modulateAlpha(state.fillColor, alpha));
+        strokePaint.setColor(modulateAlpha(state.strokeColor, alpha));
     }
 
     /** Scales a color's own alpha by {@code alpha}, matching how the framework composes the two. */
     private static int modulateAlpha(int color, int alpha) {
         int scaled = Color.alpha(color) * (alpha + (alpha >> 7)) >> 8;
         return (color & 0x00FFFFFF) | (scaled << 24);
+    }
+
+    /**
+     * The shape itself, shared between copies of the drawable.
+     *
+     * <p>Having one is what lets a {@code ?attr/} colour survive: {@code DrawableWrapperState}
+     * decides whether an {@code <inset>} can be themed by asking its child's constant state, and 16
+     * of the 18 drawables built from this class sit inside an {@code <inset>}. A null constant state
+     * makes the wrapper answer "no" and {@link #applyTheme} is then never called, leaving every
+     * themed fill transparent.
+     */
+    private static final class CutState extends ConstantState {
+        int fillColor = Color.TRANSPARENT;
+        int strokeColor = Color.TRANSPARENT;
+        float strokeWidthPx;
+        float cutTopLeftPx;
+        float cutTopRightPx;
+        float cutBottomRightPx;
+        float cutBottomLeftPx;
+
+        /** Attribute ids left unresolved at inflate time, by styleable index; null if none. */
+        @Nullable
+        int[] themeAttrs;
+        /** Bit per styleable index the XML spelled out. */
+        int presentMask;
+        int changingConfigurations;
+
+        CutState() {
+        }
+
+        CutState(@NonNull CutState orig) {
+            fillColor = orig.fillColor;
+            strokeColor = orig.strokeColor;
+            strokeWidthPx = orig.strokeWidthPx;
+            cutTopLeftPx = orig.cutTopLeftPx;
+            cutTopRightPx = orig.cutTopRightPx;
+            cutBottomRightPx = orig.cutBottomRightPx;
+            cutBottomLeftPx = orig.cutBottomLeftPx;
+            // Shared, not copied: nothing writes to this array after inflate.
+            themeAttrs = orig.themeAttrs;
+            presentMask = orig.presentMask;
+            changingConfigurations = orig.changingConfigurations;
+        }
+
+        @NonNull
+        @Override
+        public Drawable newDrawable() {
+            return new CutCornerDrawable(new CutState(this));
+        }
+
+        @Override
+        public int getChangingConfigurations() {
+            return changingConfigurations;
+        }
+
+        @Override
+        public boolean canApplyTheme() {
+            return themeAttrs != null;
+        }
     }
 }

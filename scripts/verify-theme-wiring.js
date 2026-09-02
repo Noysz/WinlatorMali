@@ -337,11 +337,16 @@ console.log('\n=== 8. tag kelas custom di resource XML ===');
 // drawable itu sekaligus. Build hijau ga membuktikan apa-apa soal ini, jadi dicek di sini:
 // satu-satunya cara nangkep typo/rename tanpa device.
 const customTags = new Map(); // FQN -> Set(nama file)
+const themedTags = new Set(); // FQN yg dikasih `?attr/` lewat attr app:-nya sendiri
 for (const f of xmlFiles) {
     const src = fs.readFileSync(f, 'utf8').replace(/<!--[\s\S]*?-->/g, '');
+    // Namespace app: di file drawable cuma dipakai oleh tag custom-nya, jadi cek per-file cukup.
+    const themedHere = /app:[A-Za-z0-9_]+="\?attr\//.test(src);
+    const rel = path.relative(RES, f);
     for (const m of src.matchAll(/<(com\.winlator\.[A-Za-z0-9_.]+)[\s/>]/g)) {
         if (!customTags.has(m[1])) customTags.set(m[1], new Set());
-        customTags.get(m[1]).add(path.relative(RES, f));
+        customTags.get(m[1]).add(rel);
+        if (themedHere && rel.startsWith('drawable')) themedTags.add(m[1]);
     }
 }
 const pgSrc = fs.readFileSync(path.join(REPO, 'app/proguard-rules.pro'), 'utf8');
@@ -364,6 +369,21 @@ for (const [fqn, users] of [...customTags].sort()) {
         `${cls} dipakai sbg tag drawable tapi ga override inflate() -> attribut app: di XML diabaikan diam-diam`);
     check(pgSrc.includes(fqn),
         `${cls} cuma direferensi dari XML (refleksi) tapi ga ada -keep buat ${fqn} di proguard-rules.pro`);
+
+    // Kontrak 2-fase theme. ResourcesImpl.loadXmlDrawable inflate drawable dgn theme=null, jadi
+    // `?attr/` nyampe ke inflate() sbg TYPE_ATTRIBUTE mentah dan getColor() THROW di situ. Nilai
+    // baru bisa dibaca di applyTheme(), yg cuma dipanggil kalau canApplyTheme() true — dan
+    // DrawableWrapperState.canApplyTheme() nanyanya ke ConstantState anak, bukan ke drawable-nya,
+    // jadi getConstantState() null = <inset> bilang "ga bisa di-theme" dan applyTheme dilewatin
+    // diam-diam (isi jadi transparan, tanpa error). Ini akar crash 2026-09-02.
+    if (themedTags.has(fqn)) {
+        check(/@Override\s+public void applyTheme\(/.test(src),
+            `${cls} dikasih ?attr/ di drawable XML tapi ga override applyTheme() -> UnsupportedOperationException waktu inflate`);
+        check(/@Override\s+public boolean canApplyTheme\(/.test(src),
+            `${cls} override applyTheme() tapi ga canApplyTheme() -> framework ga pernah manggil applyTheme()`);
+        check(/@Override\s+public ConstantState getConstantState\(/.test(src),
+            `${cls} pakai ?attr/ tapi getConstantState() ga di-override -> <inset> di atasnya lapor canApplyTheme=false, warna ga pernah ke-resolve`);
+    }
 }
 console.log(`     ${customTags.size} tag kelas custom: ${[...customTags.keys()].map((f) => f.split('.').pop()).join(', ')}`);
 
