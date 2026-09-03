@@ -1100,10 +1100,10 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
 
         Spinner spStyle = dialog.findViewById(R.id.SPHudStyle);
         if (spStyle != null) {
-            String[] styles = {"Classic (Multi-Color)", "Classic Monochrome", "Modular Glass Tiles"};
+            String[] styles = {"Classic (Multi-Color)", "Classic Monochrome", "Modular Glass Tiles", "Cyber Gauge Panels"};
             spStyle.setPopupBackgroundResource(popupBgRes);
             spStyle.setAdapter(createThemedSpinnerAdapter(this, styles, isDarkMode));
-            spStyle.setSelection(Math.min(2, frameRating.getHudStyle()));
+            spStyle.setSelection(Math.min(WinlatorHUD.STYLE_MAX, frameRating.getHudStyle()));
             spStyle.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
