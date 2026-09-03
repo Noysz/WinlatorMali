@@ -189,6 +189,12 @@ public class CyberHudRenderer {
         return (compact ? 130f : 168f) * density;
     }
 
+    /** Kembar dari drawVertical(): tiap row maju rowH + GAP, jadi n row = n*rowH + (n-1)*GAP. */
+    public float measureVerticalHeight(int rows, boolean compact) {
+        if (rows <= 0) return 0;
+        return rows * rowHeightVertical(compact) + (rows - 1) * GAP * density;
+    }
+
     public void drawVertical(Canvas c, float width, boolean compact,
             boolean showGpu, String gpuVal, int gpuPct,
             boolean showCpu, String cpuVal, int cpuPct, String cpuTemp,

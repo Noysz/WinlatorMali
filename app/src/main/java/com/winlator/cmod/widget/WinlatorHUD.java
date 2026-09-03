@@ -32,6 +32,8 @@ public class WinlatorHUD extends View {
     public static final int STYLE_CLASSIC = 0;
     public static final int STYLE_MONO    = 1;
     public static final int STYLE_TILES   = 2;
+    public static final int STYLE_CYBER   = 3;
+    public static final int STYLE_MAX     = STYLE_CYBER;
     private int currentStyle = STYLE_CLASSIC;
 
     public static final int PRESET_CUSTOM        = -1;
@@ -96,6 +98,14 @@ public class WinlatorHUD extends View {
 
     private final RectF bgRect = new RectF();
 
+    private CyberHudRenderer cyberRenderer;
+
+    /** Built on first use so the ~10 extra Paint objects cost nothing unless STYLE_CYBER is picked. */
+    private CyberHudRenderer cyber() {
+        if (cyberRenderer == null) cyberRenderer = new CyberHudRenderer(density);
+        return cyberRenderer;
+    }
+
     private float wLabelGpu, wLabelCpu, wLabelRam, wLabelPwr, wLabelTmp, wLabelCTmp, wLabelFps, wLabelApex, wSep;
     private float wVal100pct, wValFps, wValApex, wValWatt, wValTemp, wValBInfo;
 
@@ -145,8 +155,7 @@ public class WinlatorHUD extends View {
             snapshot();
             
             int reqW = (int) Math.ceil(vertical ? measureVertical() : measureHorizontal());
-            int lineH = (int) Math.ceil(TS + PAD * 2);
-            int reqH = vertical ? (int) Math.ceil(countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0)) : lineH;
+            int reqH = (int) Math.ceil(measureHudHeight());
 
             if (reqW != getWidth() || reqH != getHeight() || layoutDirty) {
                 layoutDirty = false;
@@ -354,7 +363,9 @@ public class WinlatorHUD extends View {
             boolean mono = (currentStyle == STYLE_MONO) || ((showMask & SHOW_MONO) != 0);
             updatePaintColors(mono);
 
-            if (currentStyle == STYLE_TILES) {
+            if (currentStyle == STYLE_CYBER) {
+                drawCyber(c);
+            } else if (currentStyle == STYLE_TILES) {
                 if (vertical) drawTilesVertical(c);
                 else          drawTilesHorizontal(c);
             } else {
@@ -385,6 +396,28 @@ public class WinlatorHUD extends View {
         pTmp.setColor(mono ? C_WHITE : C_TEMP);
         pRend.setColor(mono ? C_WHITE : C_REND);
         pRam.setColor(mono ? C_WHITE : C_RAM);
+    }
+
+    private void drawCyber(Canvas c) {
+        boolean compact = (showMask & SHOW_COMPACT) != 0;
+        String cpuTemp = (showMask & SHOW_CPU_TEMP) != 0 ? strCTmp : "";
+        String battPct = (showMask & SHOW_BATT_PCT) != 0 ? strPct : "";
+        if (vertical) {
+            cyber().drawVertical(c, getWidth(), compact,
+                    (showMask & SHOW_GPU)  != 0, strGpu, snapGpu,
+                    (showMask & SHOW_CPU)  != 0, strCpu, snapCpu, cpuTemp,
+                    (showMask & SHOW_RAM)  != 0, strRam, snapRam,
+                    (showMask & SHOW_BATT) != 0, strPwr, battPct, snapCharging,
+                    (showMask & SHOW_FPS)  != 0, getFpsDisplayText());
+        } else {
+            cyber().drawHorizontal(c, compact,
+                    (showMask & SHOW_GPU)  != 0, strGpu, snapGpu,
+                    (showMask & SHOW_CPU)  != 0, strCpu, snapCpu, cpuTemp,
+                    (showMask & SHOW_RAM)  != 0, strRam, snapRam,
+                    (showMask & SHOW_BATT) != 0, strPwr, battPct, snapCharging,
+                    (showMask & SHOW_FPS)  != 0, getFpsDisplayText(),
+                    (showMask & SHOW_GRAPH) != 0 ? graph : null, gHead, GBUF, gMax);
+        }
     }
 
     private void drawClassicHorizontal(Canvas c) {
@@ -780,6 +813,10 @@ public class WinlatorHUD extends View {
     }
 
     private float measureHorizontal() {
+        if (currentStyle == STYLE_CYBER) {
+            return cyber().measureHorizontal((showMask & SHOW_GPU) != 0, (showMask & SHOW_CPU) != 0,
+                    (showMask & SHOW_RAM) != 0, (showMask & SHOW_BATT) != 0, (showMask & SHOW_FPS) != 0);
+        }
         if (currentStyle == STYLE_TILES) return measureTilesHorizontal();
         return measureClassicHorizontal();
     }
@@ -906,6 +943,7 @@ public class WinlatorHUD extends View {
     }
 
     private float measureVertical() {
+        if (currentStyle == STYLE_CYBER) return cyber().measureVerticalWidth((showMask & SHOW_COMPACT) != 0);
         if (currentStyle == STYLE_TILES) return measureTilesVertical();
         return measureClassicVertical();
     }
@@ -944,10 +982,25 @@ public class WinlatorHUD extends View {
 
     @Override
     protected void onMeasure(int ws, int hs) {
-        float lineH = TS + PAD * 2;
         float w = vertical ? measureVertical() : measureHorizontal();
-        float h = vertical ? (countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0)) : lineH;
+        float h = measureHudHeight();
         setMeasuredDimension((int) Math.ceil(w), (int) Math.ceil(h));
+    }
+
+    /**
+     * Single source of truth for the view height. redrawRunnable compares its result against
+     * getWidth()/getHeight() to decide whether to relayout, so it has to agree with onMeasure
+     * exactly — computing it in two places invites a permanent disagreement and a relayout loop.
+     */
+    private float measureHudHeight() {
+        boolean compact = (showMask & SHOW_COMPACT) != 0;
+        if (currentStyle == STYLE_CYBER) {
+            return vertical ? cyber().measureVerticalHeight(countCyberRows(), compact)
+                            : cyber().rowHeightHorizontal(compact);
+        }
+        float lineH = TS + PAD * 2;
+        if (!vertical) return lineH;
+        return countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0);
     }
 
     @Override
@@ -972,6 +1025,17 @@ public class WinlatorHUD extends View {
         }
         if ((showMask & SHOW_CPU_TEMP) != 0 && (!strCTmp.isEmpty() || !compact)) r++;
         if ((showMask & SHOW_FPS)      != 0) r++;
+        return Math.max(1, r);
+    }
+
+    /** STYLE_CYBER draws one panel per metric; renderer/wrapper have no panel, so they add no row. */
+    private int countCyberRows() {
+        int r = 0;
+        if ((showMask & SHOW_GPU)  != 0) r++;
+        if ((showMask & SHOW_CPU)  != 0) r++;
+        if ((showMask & SHOW_RAM)  != 0) r++;
+        if ((showMask & SHOW_BATT) != 0) r++;
+        if ((showMask & SHOW_FPS)  != 0) r++;
         return Math.max(1, r);
     }
 
@@ -1227,7 +1291,7 @@ public class WinlatorHUD extends View {
     public int getHudStyle() { return currentStyle; }
 
     public void setHudStyle(int style) {
-        this.currentStyle = Math.max(0, Math.min(2, style));
+        this.currentStyle = Math.max(0, Math.min(STYLE_MAX, style));
         if (this.currentStyle == STYLE_MONO) showMask |= SHOW_MONO;
         else showMask &= ~SHOW_MONO;
         prefs.edit().putInt(KEY_STYLE, this.currentStyle).putInt(KEY_SHOW, showMask).apply();
@@ -1240,7 +1304,9 @@ public class WinlatorHUD extends View {
         int bit = idxToMask(idx);
         if (bit == 0) return;
         if (on) showMask |= bit; else showMask &= ~bit;
-        if (idx == 9) {
+        // The mono checkbox drives currentStyle, but STYLE_CYBER has its own palette and no mono
+        // variant, so leave the style alone there instead of silently kicking the user to CLASSIC.
+        if (idx == 9 && currentStyle != STYLE_CYBER) {
             currentStyle = on ? STYLE_MONO : STYLE_CLASSIC;
             prefs.edit().putInt(KEY_STYLE, currentStyle).apply();
         }
