@@ -154,11 +154,13 @@ public class WinlatorHUD extends View {
         try {
             snapshot();
             
-            int reqW = (int) Math.ceil(vertical ? measureVertical() : measureHorizontal());
-            int reqH;
+            int reqW, reqH;
             if (currentStyle == STYLE_CYBER) {
-                reqH = (int) Math.ceil(cyberHeight());
+                cyberLayout();
+                reqW = (int) Math.ceil(cyber().layoutWidth());
+                reqH = (int) Math.ceil(cyber().layoutHeight());
             } else {
+                reqW = (int) Math.ceil(vertical ? measureVertical() : measureHorizontal());
                 int lineH = (int) Math.ceil(TS + PAD * 2);
                 reqH = vertical ? (int) Math.ceil(countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0)) : lineH;
             }
@@ -404,30 +406,60 @@ public class WinlatorHUD extends View {
         pRam.setColor(mono ? C_WHITE : C_RAM);
     }
 
+    /**
+     * Hitung layout STYLE_CYBER. Dipanggil dari onMeasure dan redrawRunnable —
+     * dua-duanya lewat sini biar nggak mungkin beda hasil (kalau beda,
+     * requestLayout()-nya nge-loop). drawCyber() TIDAK manggil ini: dia cuma
+     * gambar hasil layout terakhir, supaya ukuran yang digambar dijamin sama
+     * dengan ukuran yang udah di-set ke view.
+     */
+    private void cyberLayout() {
+        cyber().layout(vertical, (showMask & SHOW_COMPACT) != 0,
+                (showMask & SHOW_GPU)  != 0, (showMask & SHOW_CPU) != 0,
+                (showMask & SHOW_RAM)  != 0, (showMask & SHOW_BATT) != 0,
+                (showMask & SHOW_FPS)  != 0,
+                (showMask & SHOW_RENDERER) != 0, strRend,
+                (showMask & SHOW_WRAPPER)  != 0, strWrapper,
+                budgetWidth(), budgetHeight());
+    }
+
+    /**
+     * Ruang layar yang boleh dipakai HUD, dipakai renderer Cyber buat mutusin
+     * kapan wrap ke baris/kolom kedua.
+     *
+     * MeasureSpec dari onMeasure NGGAK bisa dipakai: applyPositionPreset()
+     * manggil measure(UNSPECIFIED, UNSPECIFIED), jadi di jalur itu ukurannya 0
+     * dan HUD-nya bakal ke-collapse. Sumber yang bener = ukuran parent, pola
+     * yang sama dengan clamp drag di onTouchEvent dan applyPositionPreset.
+     * Dibagi getScaleX/Y karena lebar on-screen = measured × scale, jadi budget
+     * "sebelum scale" harus dibalik dulu. Margin 16dp per sisi ngikut margin
+     * yang dipakai applyPositionPreset.
+     */
+    private float budgetWidth() {
+        float p = getParent() instanceof View ? ((View) getParent()).getWidth() : 0;
+        if (p <= 0) p = getResources().getDisplayMetrics().widthPixels;
+        float s = getScaleX();
+        if (s <= 0) s = 1f;
+        return Math.max(0, p / s - 2 * 16f * density);
+    }
+
+    private float budgetHeight() {
+        float p = getParent() instanceof View ? ((View) getParent()).getHeight() : 0;
+        if (p <= 0) p = getResources().getDisplayMetrics().heightPixels;
+        float s = getScaleY();
+        if (s <= 0) s = 1f;
+        return Math.max(0, p / s - 2 * 16f * density);
+    }
+
     private void drawCyber(Canvas c) {
-        boolean compact = (showMask & SHOW_COMPACT) != 0;
-        String cpuTemp = (showMask & SHOW_CPU_TEMP) != 0 ? strCTmp : "";
-        String battPct = (showMask & SHOW_BATT_PCT) != 0 ? strPct : "";
-        if (vertical) {
-            cyber().drawVertical(c, getWidth(), compact,
-                    (showMask & SHOW_GPU)  != 0, strGpu, snapGpu,
-                    (showMask & SHOW_CPU)  != 0, strCpu, snapCpu, cpuTemp,
-                    (showMask & SHOW_RAM)  != 0, strRam, snapRam,
-                    (showMask & SHOW_BATT) != 0, strPwr, battPct, snapCharging,
-                    (showMask & SHOW_FPS)  != 0, getFpsDisplayText(),
-                    (showMask & SHOW_RENDERER) != 0, strRend,
-                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
-        } else {
-            cyber().drawHorizontal(c, compact,
-                    (showMask & SHOW_GPU)  != 0, strGpu, snapGpu,
-                    (showMask & SHOW_CPU)  != 0, strCpu, snapCpu, cpuTemp,
-                    (showMask & SHOW_RAM)  != 0, strRam, snapRam,
-                    (showMask & SHOW_BATT) != 0, strPwr, battPct, snapCharging,
-                    (showMask & SHOW_FPS)  != 0, getFpsDisplayText(),
-                    (showMask & SHOW_GRAPH) != 0 ? graph : null, gHead, GBUF, gMax,
-                    (showMask & SHOW_RENDERER) != 0, strRend,
-                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
-        }
+        cyber().draw(c,
+                strGpu, snapGpu,
+                strCpu, snapCpu, (showMask & SHOW_CPU_TEMP) != 0 ? strCTmp : "",
+                strRam, snapRam,
+                strPwr, (showMask & SHOW_BATT_PCT) != 0 ? strPct : "", snapCharging,
+                getFpsDisplayText(),
+                (showMask & SHOW_GRAPH) != 0 ? graph : null, gHead, GBUF, gMax,
+                strRend, strWrapper);
     }
 
     private void drawClassicHorizontal(Canvas c) {
@@ -822,13 +854,8 @@ public class WinlatorHUD extends View {
         c.drawPath(cachedPath, pGraph);
     }
 
+    /** STYLE_CYBER nggak lewat sini — dia diukur di onMeasure lewat cyberLayout(). */
     private float measureHorizontal() {
-        if (currentStyle == STYLE_CYBER) {
-            return cyber().measureHorizontal((showMask & SHOW_GPU) != 0, (showMask & SHOW_CPU) != 0,
-                    (showMask & SHOW_RAM) != 0, (showMask & SHOW_BATT) != 0, (showMask & SHOW_FPS) != 0,
-                    (showMask & SHOW_RENDERER) != 0, strRend,
-                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
-        }
         if (currentStyle == STYLE_TILES) return measureTilesHorizontal();
         return measureClassicHorizontal();
     }
@@ -954,12 +981,8 @@ public class WinlatorHUD extends View {
         return w;
     }
 
+    /** STYLE_CYBER nggak lewat sini — dia diukur di onMeasure lewat cyberLayout(). */
     private float measureVertical() {
-        if (currentStyle == STYLE_CYBER) {
-            return cyber().measureVerticalWidth((showMask & SHOW_COMPACT) != 0,
-                    (showMask & SHOW_RENDERER) != 0, strRend,
-                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
-        }
         if (currentStyle == STYLE_TILES) return measureTilesVertical();
         return measureClassicVertical();
     }
@@ -998,27 +1021,16 @@ public class WinlatorHUD extends View {
 
     @Override
     protected void onMeasure(int ws, int hs) {
-        float w = vertical ? measureVertical() : measureHorizontal();
         if (currentStyle == STYLE_CYBER) {
-            setMeasuredDimension((int) Math.ceil(w), (int) Math.ceil(cyberHeight()));
+            cyberLayout();
+            setMeasuredDimension((int) Math.ceil(cyber().layoutWidth()),
+                                 (int) Math.ceil(cyber().layoutHeight()));
             return;
         }
+        float w = vertical ? measureVertical() : measureHorizontal();
         float lineH = TS + PAD * 2;
         float h = vertical ? (countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0)) : lineH;
         setMeasuredDimension((int) Math.ceil(w), (int) Math.ceil(h));
-    }
-
-    /**
-     * Tinggi view khusus STYLE_CYBER. redrawRunnable membandingkan hasilnya dengan
-     * getHeight() buat mutusin requestLayout(), jadi cuma boleh dihitung di satu
-     * tempat — kalau dihitung dua kali dan beda pembulatan, relayout-nya nge-loop.
-     * Style punya teja sengaja TIDAK lewat sini: rumus tingginya dibiarkan persis
-     * kayak aslinya di onMeasure/redrawRunnable, biar nol perubahan jalur kode.
-     */
-    private float cyberHeight() {
-        boolean compact = (showMask & SHOW_COMPACT) != 0;
-        return vertical ? cyber().measureVerticalHeight(countCyberRows(), compact)
-                        : cyber().rowHeightHorizontal(compact);
     }
 
     @Override
@@ -1043,23 +1055,6 @@ public class WinlatorHUD extends View {
         }
         if ((showMask & SHOW_CPU_TEMP) != 0 && (!strCTmp.isEmpty() || !compact)) r++;
         if ((showMask & SHOW_FPS)      != 0) r++;
-        return Math.max(1, r);
-    }
-
-    /**
-     * Jumlah row di mode vertikal STYLE_CYBER. Urutannya harus persis sama dengan
-     * urutan gambar di CyberHudRenderer.drawVertical() — kalau beda, tingginya
-     * salah dan row paling bawah ke-potong.
-     */
-    private int countCyberRows() {
-        int r = 0;
-        if ((showMask & SHOW_RENDERER) != 0) r++;
-        if ((showMask & SHOW_WRAPPER)  != 0) r++;
-        if ((showMask & SHOW_GPU)  != 0) r++;
-        if ((showMask & SHOW_CPU)  != 0) r++;
-        if ((showMask & SHOW_RAM)  != 0) r++;
-        if ((showMask & SHOW_BATT) != 0) r++;
-        if ((showMask & SHOW_FPS)  != 0) r++;
         return Math.max(1, r);
     }
 
