@@ -155,7 +155,13 @@ public class WinlatorHUD extends View {
             snapshot();
             
             int reqW = (int) Math.ceil(vertical ? measureVertical() : measureHorizontal());
-            int reqH = (int) Math.ceil(measureHudHeight());
+            int reqH;
+            if (currentStyle == STYLE_CYBER) {
+                reqH = (int) Math.ceil(cyberHeight());
+            } else {
+                int lineH = (int) Math.ceil(TS + PAD * 2);
+                reqH = vertical ? (int) Math.ceil(countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0)) : lineH;
+            }
 
             if (reqW != getWidth() || reqH != getHeight() || layoutDirty) {
                 layoutDirty = false;
@@ -408,7 +414,9 @@ public class WinlatorHUD extends View {
                     (showMask & SHOW_CPU)  != 0, strCpu, snapCpu, cpuTemp,
                     (showMask & SHOW_RAM)  != 0, strRam, snapRam,
                     (showMask & SHOW_BATT) != 0, strPwr, battPct, snapCharging,
-                    (showMask & SHOW_FPS)  != 0, getFpsDisplayText());
+                    (showMask & SHOW_FPS)  != 0, getFpsDisplayText(),
+                    (showMask & SHOW_RENDERER) != 0, strRend,
+                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
         } else {
             cyber().drawHorizontal(c, compact,
                     (showMask & SHOW_GPU)  != 0, strGpu, snapGpu,
@@ -416,7 +424,9 @@ public class WinlatorHUD extends View {
                     (showMask & SHOW_RAM)  != 0, strRam, snapRam,
                     (showMask & SHOW_BATT) != 0, strPwr, battPct, snapCharging,
                     (showMask & SHOW_FPS)  != 0, getFpsDisplayText(),
-                    (showMask & SHOW_GRAPH) != 0 ? graph : null, gHead, GBUF, gMax);
+                    (showMask & SHOW_GRAPH) != 0 ? graph : null, gHead, GBUF, gMax,
+                    (showMask & SHOW_RENDERER) != 0, strRend,
+                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
         }
     }
 
@@ -815,7 +825,9 @@ public class WinlatorHUD extends View {
     private float measureHorizontal() {
         if (currentStyle == STYLE_CYBER) {
             return cyber().measureHorizontal((showMask & SHOW_GPU) != 0, (showMask & SHOW_CPU) != 0,
-                    (showMask & SHOW_RAM) != 0, (showMask & SHOW_BATT) != 0, (showMask & SHOW_FPS) != 0);
+                    (showMask & SHOW_RAM) != 0, (showMask & SHOW_BATT) != 0, (showMask & SHOW_FPS) != 0,
+                    (showMask & SHOW_RENDERER) != 0, strRend,
+                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
         }
         if (currentStyle == STYLE_TILES) return measureTilesHorizontal();
         return measureClassicHorizontal();
@@ -943,7 +955,11 @@ public class WinlatorHUD extends View {
     }
 
     private float measureVertical() {
-        if (currentStyle == STYLE_CYBER) return cyber().measureVerticalWidth((showMask & SHOW_COMPACT) != 0);
+        if (currentStyle == STYLE_CYBER) {
+            return cyber().measureVerticalWidth((showMask & SHOW_COMPACT) != 0,
+                    (showMask & SHOW_RENDERER) != 0, strRend,
+                    (showMask & SHOW_WRAPPER)  != 0, strWrapper);
+        }
         if (currentStyle == STYLE_TILES) return measureTilesVertical();
         return measureClassicVertical();
     }
@@ -983,24 +999,26 @@ public class WinlatorHUD extends View {
     @Override
     protected void onMeasure(int ws, int hs) {
         float w = vertical ? measureVertical() : measureHorizontal();
-        float h = measureHudHeight();
+        if (currentStyle == STYLE_CYBER) {
+            setMeasuredDimension((int) Math.ceil(w), (int) Math.ceil(cyberHeight()));
+            return;
+        }
+        float lineH = TS + PAD * 2;
+        float h = vertical ? (countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0)) : lineH;
         setMeasuredDimension((int) Math.ceil(w), (int) Math.ceil(h));
     }
 
     /**
-     * Single source of truth for the view height. redrawRunnable compares its result against
-     * getWidth()/getHeight() to decide whether to relayout, so it has to agree with onMeasure
-     * exactly — computing it in two places invites a permanent disagreement and a relayout loop.
+     * Tinggi view khusus STYLE_CYBER. redrawRunnable membandingkan hasilnya dengan
+     * getHeight() buat mutusin requestLayout(), jadi cuma boleh dihitung di satu
+     * tempat — kalau dihitung dua kali dan beda pembulatan, relayout-nya nge-loop.
+     * Style punya teja sengaja TIDAK lewat sini: rumus tingginya dibiarkan persis
+     * kayak aslinya di onMeasure/redrawRunnable, biar nol perubahan jalur kode.
      */
-    private float measureHudHeight() {
+    private float cyberHeight() {
         boolean compact = (showMask & SHOW_COMPACT) != 0;
-        if (currentStyle == STYLE_CYBER) {
-            return vertical ? cyber().measureVerticalHeight(countCyberRows(), compact)
-                            : cyber().rowHeightHorizontal(compact);
-        }
-        float lineH = TS + PAD * 2;
-        if (!vertical) return lineH;
-        return countVerticalRows() * lineH + (currentStyle == STYLE_TILES ? (countVerticalRows() - 1) * 3f * density : 0);
+        return vertical ? cyber().measureVerticalHeight(countCyberRows(), compact)
+                        : cyber().rowHeightHorizontal(compact);
     }
 
     @Override
@@ -1028,9 +1046,15 @@ public class WinlatorHUD extends View {
         return Math.max(1, r);
     }
 
-    /** STYLE_CYBER draws one panel per metric; renderer/wrapper have no panel, so they add no row. */
+    /**
+     * Jumlah row di mode vertikal STYLE_CYBER. Urutannya harus persis sama dengan
+     * urutan gambar di CyberHudRenderer.drawVertical() — kalau beda, tingginya
+     * salah dan row paling bawah ke-potong.
+     */
     private int countCyberRows() {
         int r = 0;
+        if ((showMask & SHOW_RENDERER) != 0) r++;
+        if ((showMask & SHOW_WRAPPER)  != 0) r++;
         if ((showMask & SHOW_GPU)  != 0) r++;
         if ((showMask & SHOW_CPU)  != 0) r++;
         if ((showMask & SHOW_RAM)  != 0) r++;
